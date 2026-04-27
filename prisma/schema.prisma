@@ -1,0 +1,24 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id       String  @id @default(cuid())
+  clerkId  String  @unique
+  assets   Asset[]
+}
+
+model Asset {
+  id        String   @id @default(cuid())
+  ticker    String
+  type      String   // "stock_br" | "crypto" | "stock_us" | "fixed"
+  quantity  Float
+  avgPrice  Float
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
