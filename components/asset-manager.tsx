@@ -27,7 +27,7 @@ async function fetchAssets(): Promise<Asset[]> {
 
 export function AssetManager() {
   const queryClient = useQueryClient()
-  const [form, setForm] = useState({ ticker: '', type: '', quantity: '', avgPrice: '' })
+  const [form, setForm] = useState({ ticker: '', type: '', operation: 'BUY', quantity: '', price: '' })
   const [error, setError] = useState('')
   const [tickerError, setTickerError] = useState('')
   const [fetchingPrice, setFetchingPrice] = useState(false)
@@ -35,7 +35,7 @@ export function AssetManager() {
 
   useEffect(() => {
     setTickerError('')
-    setForm(f => ({ ...f, type: '', avgPrice: '' }))
+    setForm(f => ({ ...f, type: '', price: '' }))
     if (!form.ticker || form.ticker.length < 2) return
 
     if (debounceRef.current) clearTimeout(debounceRef.current)
@@ -46,7 +46,7 @@ export function AssetManager() {
         const res = await fetch(`/api/quote/${form.ticker.toUpperCase()}`)
         if (res.ok) {
           const { price, type } = await res.json()
-          setForm(f => ({ ...f, avgPrice: price.toFixed(2), type }))
+          setForm(f => ({ ...f, price: price.toFixed(2), type }))
           setTickerError('')
         } else {
           setTickerError('Ticker não encontrado. Use o código da B3 (ex: PETR4) ou o ID do CoinGecko (ex: bitcoin).')
@@ -61,22 +61,34 @@ export function AssetManager() {
 
   const addMutation = useMutation({
     mutationFn: async (data: typeof form) => {
-      const res = await fetch('/api/assets', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
-      if (!res.ok) throw new Error('Falha ao adicionar ativo')
+      const res = await fetch('/api/transactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body.error ?? 'Falha ao registrar operação')
+      }
       return res.json()
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['assets'] })
       queryClient.invalidateQueries({ queryKey: ['portfolio'] })
-      setForm({ ticker: '', type: '', quantity: '', avgPrice: '' })
+      queryClient.invalidateQueries({ queryKey: ['transactions'] })
+      setForm({ ticker: '', type: '', operation: 'BUY', quantity: '', price: '' })
       setError('')
     },
-    onError: () => setError('Erro ao adicionar ativo. Verifique os dados.'),
+    onError: (err: Error) => setError(err.message),
   })
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch('/api/assets', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
+      const res = await fetch('/api/assets', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      })
       if (!res.ok) throw new Error('Falha ao remover ativo')
     },
     onSuccess: () => {
@@ -87,7 +99,7 @@ export function AssetManager() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.ticker || !form.quantity || !form.avgPrice || !form.type) {
+    if (!form.ticker || !form.quantity || !form.price || !form.type) {
       setError('Aguarde a detecção do ticker ou verifique os dados.')
       return
     }
@@ -97,8 +109,28 @@ export function AssetManager() {
   return (
     <div className="flex flex-col gap-6">
       <form onSubmit={handleSubmit} className="rounded-xl border bg-white p-6 shadow-sm flex flex-col gap-4">
-        <h2 className="text-base font-semibold text-zinc-900">Adicionar ativo</h2>
+        <h2 className="text-base font-semibold text-zinc-900">Registrar operação</h2>
         {error && <p className="text-sm text-red-500">{error}</p>}
+
+        <div className="flex gap-2">
+          {(['BUY', 'SELL'] as const).map(op => (
+            <button
+              key={op}
+              type="button"
+              onClick={() => setForm(f => ({ ...f, operation: op }))}
+              className={`rounded-lg px-4 py-1.5 text-sm font-medium transition-colors ${
+                form.operation === op
+                  ? op === 'BUY'
+                    ? 'bg-green-600 text-white'
+                    : 'bg-red-500 text-white'
+                  : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'
+              }`}
+            >
+              {op === 'BUY' ? 'Compra' : 'Venda'}
+            </button>
+          ))}
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="flex flex-col gap-1">
             <label className="text-xs text-zinc-500">Ticker</label>
@@ -129,29 +161,36 @@ export function AssetManager() {
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-zinc-500">
-              Preço médio (R$)
-            </label>
+            <label className="text-xs text-zinc-500">Preço unitário (R$)</label>
             <input
               type="number"
               step="0.01"
               className="rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
               placeholder={fetchingPrice ? 'Buscando...' : 'ex: 32.50'}
-              value={form.avgPrice}
-              onChange={e => setForm(f => ({ ...f, avgPrice: e.target.value }))}
+              value={form.price}
+              onChange={e => setForm(f => ({ ...f, price: e.target.value }))}
             />
           </div>
         </div>
         <button
           type="submit"
           disabled={addMutation.isPending || fetchingPrice || !!tickerError}
-          className="self-start rounded-lg bg-zinc-900 px-5 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50 transition-colors"
+          className={`self-start rounded-lg px-5 py-2 text-sm font-medium text-white disabled:opacity-50 transition-colors ${
+            form.operation === 'BUY' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-500 hover:bg-red-600'
+          }`}
         >
-          {addMutation.isPending ? 'Adicionando...' : 'Adicionar'}
+          {addMutation.isPending
+            ? 'Registrando...'
+            : form.operation === 'BUY'
+            ? 'Registrar compra'
+            : 'Registrar venda'}
         </button>
       </form>
 
       <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b">
+          <p className="text-sm font-semibold text-zinc-900">Posição atual</p>
+        </div>
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-zinc-50 text-left text-xs text-zinc-500 uppercase tracking-wider">
