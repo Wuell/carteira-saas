@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
-  const { ticker, type, operation, quantity, price } = await req.json()
+  const { ticker, type, operation, quantity, price, startDate, fixedRate } = await req.json()
   if (!ticker || !type || !operation || !quantity || !price) {
     return NextResponse.json({ error: 'Campos obrigatórios ausentes' }, { status: 400 })
   }
@@ -44,11 +44,24 @@ export async function POST(req: NextRequest) {
       const newAvgPrice = (existingAsset.avgPrice * existingAsset.quantity + prc * qty) / totalQty
       await prisma.asset.update({
         where: { id: existingAsset.id },
-        data: { quantity: totalQty, avgPrice: newAvgPrice },
+        data: {
+          quantity: totalQty,
+          avgPrice: newAvgPrice,
+          ...(startDate && { startDate: new Date(startDate) }),
+          ...(fixedRate && { fixedRate: Number(fixedRate) }),
+        },
       })
     } else {
       await prisma.asset.create({
-        data: { ticker: upperTicker, type, quantity: qty, avgPrice: prc, userId: user.id },
+        data: {
+          ticker: upperTicker,
+          type,
+          quantity: qty,
+          avgPrice: prc,
+          userId: user.id,
+          ...(startDate && { startDate: new Date(startDate) }),
+          ...(fixedRate && { fixedRate: Number(fixedRate) }),
+        },
       })
     }
   } else if (operation === 'SELL') {

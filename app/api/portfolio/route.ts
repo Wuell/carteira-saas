@@ -18,7 +18,11 @@ export async function GET() {
 
   const assetsWithQuotes = await Promise.all(
     assets.map(async (asset: Asset) => {
-      const currentPrice = await getQuote(asset.ticker, asset.type)
+      const currentPrice = await getQuote(asset.ticker, asset.type, {
+        avgPrice: asset.avgPrice,
+        startDate: asset.startDate,
+        fixedRate: asset.fixedRate,
+      })
       const currentValue = currentPrice * asset.quantity
       const investedValue = asset.avgPrice * asset.quantity
       const returnPct = investedValue > 0 ? ((currentValue - investedValue) / investedValue) * 100 : 0

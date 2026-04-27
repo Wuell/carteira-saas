@@ -81,7 +81,13 @@ export async function detectTickerType(ticker: string): Promise<{ type: string; 
   return null
 }
 
-export async function getQuote(ticker: string, type: string): Promise<number> {
+type AssetOpts = {
+  avgPrice?: number
+  startDate?: Date | null
+  fixedRate?: number | null
+}
+
+export async function getQuote(ticker: string, type: string, opts?: AssetOpts): Promise<number> {
   try {
     if (type === 'crypto') {
       const geckoId = await resolveToGeckoId(ticker)
@@ -103,6 +109,15 @@ export async function getQuote(ticker: string, type: string): Promise<number> {
       const data = await res.json()
       if (data.error) return 0
       return data.results?.[0]?.regularMarketPrice ?? 0
+    }
+
+    if (type === 'fixed') {
+      const { avgPrice, startDate, fixedRate } = opts ?? {}
+      if (!avgPrice) return 0
+      // Sem taxa fixa, retorna o valor original (ex: renda fixa sem juros definidos)
+      if (!fixedRate || !startDate) return avgPrice
+      const years = (Date.now() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24 * 365)
+      return avgPrice * Math.pow(1 + fixedRate / 100, years)
     }
   } catch {
     return 0

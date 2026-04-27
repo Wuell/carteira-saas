@@ -27,12 +27,14 @@ model Transaction {
 }
 
 model Asset {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   ticker    String
-  type      String   // "stock_br" | "crypto" | "stock_us" | "fixed"
+  type      String    // "stock_br" | "crypto" | "stock_us" | "fixed"
   quantity  Float
   avgPrice  Float
+  startDate DateTime? // renda fixa: data da aplicação
+  fixedRate Float?    // renda fixa prefixada: taxa ao ano em %
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
+  user      User      @relation(fields: [userId], references: [id])
+  createdAt DateTime  @default(now())
 }
