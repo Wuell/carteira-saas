@@ -48,6 +48,8 @@ async function resolveToGeckoId(symbol: string): Promise<string | null> {
 }
 
 export async function detectTickerType(ticker: string): Promise<{ type: string; price: number } | null> {
+  const isKnownCrypto = !!CRYPTO_SYMBOL_MAP[ticker.toUpperCase()]
+
   // Tenta como cripto (símbolo ou ID do CoinGecko)
   try {
     const geckoId = await resolveToGeckoId(ticker)
@@ -60,6 +62,9 @@ export async function detectTickerType(ticker: string): Promise<{ type: string; 
       }
     }
   } catch {}
+
+  // Se está no mapa de criptos, não tenta Brapi mesmo que a CoinGecko falhe
+  if (isKnownCrypto) return null
 
   // Tenta como ação BR na Brapi
   try {
