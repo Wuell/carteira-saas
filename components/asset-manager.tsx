@@ -155,15 +155,16 @@ export function AssetManager() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.ticker || !form.quantity || !form.price || !form.type) {
+    const isFixed = selectedCategory === 'fixed'
+    if (!form.ticker || !form.price || !form.type) {
       setError('Preencha todos os campos obrigatórios.')
       return
     }
-    if (form.type === 'fixed' && !form.fixedRate) {
-      setError('Informe a taxa ao ano.')
+    if (!isFixed && !form.quantity) {
+      setError('Informe a quantidade.')
       return
     }
-    addMutation.mutate(form)
+    addMutation.mutate({ ...form, quantity: isFixed ? '1' : form.quantity })
   }
 
   return (
@@ -249,33 +250,35 @@ export function AssetManager() {
                   <label className="text-xs text-zinc-500">Nome do investimento</label>
                   <input
                     className="rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
-                    placeholder="ex: TESOURO-PRE-2032, CDB-INTER"
+                    placeholder="ex: Tesouro Prefixado 2032, CDB Inter"
                     value={form.ticker}
                     onChange={e => setForm(f => ({ ...f, ticker: e.target.value }))}
                   />
                 </div>
               )}
 
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-500">Quantidade</label>
-                <input
-                  type="number"
-                  className="rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
-                  placeholder="ex: 10"
-                  value={form.quantity}
-                  onChange={e => setForm(f => ({ ...f, quantity: e.target.value }))}
-                />
-              </div>
+              {selectedCategory !== 'fixed' && (
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-zinc-500">Quantidade</label>
+                  <input
+                    type="number"
+                    className="rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                    placeholder="ex: 10"
+                    value={form.quantity}
+                    onChange={e => setForm(f => ({ ...f, quantity: e.target.value }))}
+                  />
+                </div>
+              )}
 
               <div className="flex flex-col gap-1">
                 <label className="text-xs text-zinc-500">
-                  {selectedCategory === 'fixed' ? 'Valor aplicado (R$)' : 'Preço unitário (R$)'}
+                  {selectedCategory === 'fixed' ? 'Valor investido (R$)' : 'Preço unitário (R$)'}
                 </label>
                 <input
                   type="number"
                   step="0.01"
                   className="rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
-                  placeholder={fetchingPrice ? 'Buscando...' : 'ex: 1000.00'}
+                  placeholder={fetchingPrice ? 'Buscando...' : selectedCategory === 'fixed' ? 'ex: 5000.00' : 'ex: 32.50'}
                   value={form.price}
                   onChange={e => setForm(f => ({ ...f, price: e.target.value }))}
                 />
@@ -283,29 +286,20 @@ export function AssetManager() {
             </div>
 
             {selectedCategory === 'fixed' && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-lg bg-zinc-50 border border-zinc-200">
+              <div className="flex flex-col gap-3 p-4 rounded-lg bg-zinc-50 border border-zinc-200">
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs text-zinc-500">Data da aplicação</label>
-                  <input
-                    type="date"
-                    className="rounded-lg border px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300"
-                    value={form.startDate}
-                    onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))}
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs text-zinc-500">Taxa ao ano (%)</label>
+                  <label className="text-xs text-zinc-500">Rentabilidade acumulada (%)</label>
                   <input
                     type="number"
                     step="0.01"
                     className="rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
-                    placeholder="ex: 13.5"
+                    placeholder="ex: 24.74"
                     value={form.fixedRate}
                     onChange={e => setForm(f => ({ ...f, fixedRate: e.target.value }))}
                   />
                 </div>
-                <p className="sm:col-span-2 text-xs text-zinc-400">
-                  Informe a taxa contratada na compra. O rendimento é calculado automaticamente.
+                <p className="text-xs text-zinc-400">
+                  Informe a rentabilidade que aparece no seu app (ex: Inter, Rico). Atualize quando quiser ver o valor corrigido.
                 </p>
               </div>
             )}

@@ -112,12 +112,11 @@ export async function getQuote(ticker: string, type: string, opts?: AssetOpts): 
     }
 
     if (type === 'fixed') {
-      const { avgPrice, startDate, fixedRate } = opts ?? {}
+      const { avgPrice, fixedRate } = opts ?? {}
       if (!avgPrice) return 0
-      // Sem taxa fixa, retorna o valor original (ex: renda fixa sem juros definidos)
-      if (!fixedRate || !startDate) return avgPrice
-      const years = (Date.now() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24 * 365)
-      return avgPrice * Math.pow(1 + fixedRate / 100, years)
+      // fixedRate = rentabilidade acumulada % informada manualmente pelo usuário
+      if (!fixedRate) return avgPrice
+      return avgPrice * (1 + fixedRate / 100)
     }
   } catch {
     return 0
