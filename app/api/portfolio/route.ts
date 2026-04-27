@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getQuote } from '@/lib/quotes'
 import { getOrCreateUser } from '@/lib/user'
+import type { Asset } from '@prisma/client'
 
 export async function GET() {
   const { userId } = await auth()
@@ -16,7 +17,7 @@ export async function GET() {
   }
 
   const assetsWithQuotes = await Promise.all(
-    assets.map(async (asset) => {
+    assets.map(async (asset: Asset) => {
       const currentPrice = await getQuote(asset.ticker, asset.type)
       const currentValue = currentPrice * asset.quantity
       const investedValue = asset.avgPrice * asset.quantity
