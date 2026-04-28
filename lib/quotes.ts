@@ -1,3 +1,5 @@
+import type { FixedIncomeLot } from '@prisma/client'
+
 const CRYPTO_SYMBOL_MAP: Record<string, string> = {
   BTC: 'bitcoin',
   ETH: 'ethereum',
@@ -35,7 +37,6 @@ async function resolveToGeckoId(symbol: string): Promise<string | null> {
   const upper = symbol.toUpperCase()
   if (CRYPTO_SYMBOL_MAP[upper]) return CRYPTO_SYMBOL_MAP[upper]
 
-  // Se não está no mapa, tenta buscar pelo símbolo na CoinGecko
   try {
     const res = await fetch(`https://api.coingecko.com/api/v3/search?query=${encodeURIComponent(symbol)}`)
     if (!res.ok) return null
@@ -50,7 +51,6 @@ async function resolveToGeckoId(symbol: string): Promise<string | null> {
 export async function detectTickerType(ticker: string): Promise<{ type: string; price: number } | null> {
   const isKnownCrypto = !!CRYPTO_SYMBOL_MAP[ticker.toUpperCase()]
 
-  // Tenta como cripto (símbolo ou ID do CoinGecko)
   try {
     const geckoId = await resolveToGeckoId(ticker)
     if (geckoId) {
@@ -63,10 +63,8 @@ export async function detectTickerType(ticker: string): Promise<{ type: string; 
     }
   } catch {}
 
-  // Se está no mapa de criptos, não tenta Brapi mesmo que a CoinGecko falhe
   if (isKnownCrypto) return null
 
-  // Tenta como ação BR na Brapi
   try {
     const token = process.env.BRAPI_TOKEN
     const url = `https://brapi.dev/api/quote/${ticker.toUpperCase()}${token ? `?token=${token}` : ''}`
@@ -81,54 +79,7 @@ export async function detectTickerType(ticker: string): Promise<{ type: string; 
   return null
 }
 
-type AssetOpts = {
-  avgPrice?: number
-  subType?: string | null
-  startDate?: Date | null
-  maturityDate?: Date | null
-  fixedRate?: number | null
-}
-
-// Busca CDI diário (série 12 do BCB) e retorna o fator acumulado para o período.
-// Retorna 1 (sem rendimento) em caso de falha.
-async function fetchCdiAccumulatedFactor(startDate: Date, cdiPct: number): Promise<number> {
-  const fmt = (d: Date) =>
-    `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`
-  const url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados?formato=json&dataInicial=${fmt(startDate)}&dataFinal=${fmt(new Date())}`
-  try {
-    const res = await fetch(url, { next: { revalidate: 3600 } })
-    if (!res.ok) return 1
-    const data: Array<{ data: string; valor: string }> = await res.json()
-    if (!data.length) return 1
-    // Cada item é a taxa CDI diária em %. Para CDB a X% do CDI:
-    // fator_dia = 1 + (taxa_dia/100 × cdiPct/100)
-    let factor = 1
-    for (const item of data) {
-      factor *= 1 + (Number(item.valor) / 100) * (cdiPct / 100)
-    }
-    return factor
-  } catch {
-    return 1
-  }
-}
-
-// Conta dias úteis (seg-sex) entre duas datas, sem considerar feriados.
-// Diferença em relação ao calendário real: ~10-12 feriados/ano (~0.5% no expoente).
-function countWeekdays(start: Date, end: Date): number {
-  const msPerDay = 86400000
-  const totalDays = Math.max(0, Math.floor((end.getTime() - start.getTime()) / msPerDay))
-  const fullWeeks = Math.floor(totalDays / 7)
-  const remainder = totalDays % 7
-  const startDay = start.getDay()
-  let extra = 0
-  for (let i = 0; i < remainder; i++) {
-    const d = (startDay + i) % 7
-    if (d !== 0 && d !== 6) extra++
-  }
-  return fullWeeks * 5 + extra
-}
-
-export async function getQuote(ticker: string, type: string, opts?: AssetOpts): Promise<number> {
+export async function getQuote(ticker: string, type: string): Promise<number> {
   try {
     if (type === 'crypto') {
       const geckoId = await resolveToGeckoId(ticker)
@@ -151,33 +102,42 @@ export async function getQuote(ticker: string, type: string, opts?: AssetOpts): 
       if (data.error) return 0
       return data.results?.[0]?.regularMarketPrice ?? 0
     }
-
-    if (type === 'fixed') {
-      const { avgPrice, subType, fixedRate, startDate, maturityDate } = opts ?? {}
-      if (!avgPrice) return 0
-      if (!fixedRate) return avgPrice
-
-      // Tesouro Direto: juros compostos com dias úteis / 252
-      if (subType === 'tesouro' && startDate) {
-        const now = new Date()
-        const maturity = maturityDate ? new Date(maturityDate) : null
-        const effectiveEnd = maturity && maturity < now ? maturity : now
-        const weekdays = countWeekdays(new Date(startDate), effectiveEnd)
-        return avgPrice * Math.pow(1 + fixedRate / 100, weekdays / 252)
-      }
-
-      // CDB: fixedRate = % do CDI (ex: 102). Busca CDI acumulado via BCB.
-      if (subType === 'cdb' && startDate) {
-        const factor = await fetchCdiAccumulatedFactor(new Date(startDate), fixedRate)
-        return avgPrice * factor
-      }
-
-      // Fallback: rentabilidade acumulada informada manualmente
-      return avgPrice * (1 + fixedRate / 100)
-    }
-  } catch {
-    return 0
-  }
+  } catch {}
 
   return 0
+}
+
+// Conta dias úteis (seg-sex) entre duas datas, sem considerar feriados.
+function countWeekdays(start: Date, end: Date): number {
+  const msPerDay = 86400000
+  const totalDays = Math.max(0, Math.floor((end.getTime() - start.getTime()) / msPerDay))
+  const fullWeeks = Math.floor(totalDays / 7)
+  const remainder = totalDays % 7
+  const startDay = start.getDay()
+  let extra = 0
+  for (let i = 0; i < remainder; i++) {
+    const d = (startDay + i) % 7
+    if (d !== 0 && d !== 6) extra++
+  }
+  return fullWeeks * 5 + extra
+}
+
+export function getFixedLotCurrentValue(lot: FixedIncomeLot): number {
+  if (lot.subType === 'tesouro') {
+    if (!lot.annualRate || !lot.startDate) return lot.investedValue
+    const now = new Date()
+    const maturity = lot.maturityDate ? new Date(lot.maturityDate) : null
+    // Trava o rendimento na data de vencimento se já passou
+    const effectiveEnd = maturity && maturity < now ? maturity : now
+    const weekdays = countWeekdays(new Date(lot.startDate), effectiveEnd)
+    return lot.investedValue * Math.pow(1 + lot.annualRate / 100, weekdays / 252)
+  }
+
+  if (lot.subType === 'cdb') {
+    // Usuário informa a rentabilidade acumulada atual lida no app do banco
+    if (lot.accumulatedReturn == null) return lot.investedValue
+    return lot.investedValue * (1 + lot.accumulatedReturn / 100)
+  }
+
+  return lot.investedValue
 }

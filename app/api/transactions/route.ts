@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
-  const { ticker, type, operation, quantity, price, subType, startDate, maturityDate, fixedRate } = await req.json()
+  const { ticker, type, operation, quantity, price } = await req.json()
   if (!ticker || !type || !operation || !quantity || !price) {
     return NextResponse.json({ error: 'Campos obrigatórios ausentes' }, { status: 400 })
   }
@@ -31,13 +31,7 @@ export async function POST(req: NextRequest) {
   const upperTicker = ticker.toUpperCase()
 
   const transaction = await prisma.transaction.create({
-    data: {
-      ticker: upperTicker, type, operation, quantity: qty, price: prc, userId: user.id,
-      ...(subType && { subType }),
-      ...(startDate && { startDate: new Date(startDate) }),
-      ...(maturityDate && { maturityDate: new Date(maturityDate) }),
-      ...(fixedRate && { fixedRate: Number(fixedRate) }),
-    },
+    data: { ticker: upperTicker, type, operation, quantity: qty, price: prc, userId: user.id },
   })
 
   const existingAsset = await prisma.asset.findFirst({
@@ -50,29 +44,11 @@ export async function POST(req: NextRequest) {
       const newAvgPrice = (existingAsset.avgPrice * existingAsset.quantity + prc * qty) / totalQty
       await prisma.asset.update({
         where: { id: existingAsset.id },
-        data: {
-          quantity: totalQty,
-          avgPrice: newAvgPrice,
-          ...(subType && { subType }),
-          // Preserva a startDate original (primeira compra) — cálculo usa datas por lote nas transactions
-          ...(!existingAsset.startDate && startDate && { startDate: new Date(startDate) }),
-          ...(maturityDate && { maturityDate: new Date(maturityDate) }),
-          ...(fixedRate && { fixedRate: Number(fixedRate) }),
-        },
+        data: { quantity: totalQty, avgPrice: newAvgPrice },
       })
     } else {
       await prisma.asset.create({
-        data: {
-          ticker: upperTicker,
-          type,
-          quantity: qty,
-          avgPrice: prc,
-          userId: user.id,
-          ...(subType && { subType }),
-          ...(startDate && { startDate: new Date(startDate) }),
-          ...(maturityDate && { maturityDate: new Date(maturityDate) }),
-          ...(fixedRate && { fixedRate: Number(fixedRate) }),
-        },
+        data: { ticker: upperTicker, type, quantity: qty, avgPrice: prc, userId: user.id },
       })
     }
   } else if (operation === 'SELL') {

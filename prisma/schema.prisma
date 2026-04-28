@@ -7,40 +7,50 @@ datasource db {
 }
 
 model User {
-  id           String        @id @default(cuid())
-  clerkId      String        @unique
-  assets       Asset[]
-  transactions Transaction[]
+  id             String           @id @default(cuid())
+  clerkId        String           @unique
+  assets         Asset[]
+  transactions   Transaction[]
+  fixedIncomeLots FixedIncomeLot[]
 }
 
 model Transaction {
-  id           String    @id @default(cuid())
-  ticker       String
-  type         String    // "stock_br" | "crypto" | "stock_us" | "fixed"
-  operation    String    // "BUY" | "SELL"
-  quantity     Float
-  price        Float
-  date         DateTime  @default(now())
-  subType      String?   // renda fixa: "tesouro" | "cdb"
-  startDate    DateTime? // renda fixa: data da aplicação
-  maturityDate DateTime? // renda fixa: data de vencimento
-  fixedRate    Float?    // tesouro: taxa ao ano %; cdb: % do CDI (ex: 102)
-  userId       String
-  user         User      @relation(fields: [userId], references: [id])
-  createdAt    DateTime  @default(now())
+  id        String   @id @default(cuid())
+  ticker    String
+  type      String   // "stock_br" | "crypto" | "stock_us"
+  operation String   // "BUY" | "SELL"
+  quantity  Float
+  price     Float
+  date      DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
 }
 
 model Asset {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   ticker    String
-  type      String    // "stock_br" | "crypto" | "stock_us" | "fixed"
+  type      String   // "stock_br" | "crypto" | "stock_us"
   quantity  Float
   avgPrice  Float
-  subType      String?   // renda fixa: "tesouro" | "cdb"
-  startDate    DateTime? // renda fixa: data da aplicação
-  maturityDate DateTime? // renda fixa: data de vencimento
-  fixedRate    Float?    // tesouro: taxa ao ano %; cdb: % do CDI (ex: 102)
   userId    String
-  user      User      @relation(fields: [userId], references: [id])
-  createdAt DateTime  @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model FixedIncomeLot {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id])
+  name              String
+  subType           String    // "tesouro" | "cdb"
+  investedValue     Float
+  // Tesouro: taxa ao ano (ex: 13.97 para 13,97% a.a.)
+  annualRate        Float?
+  startDate         DateTime?
+  maturityDate      DateTime?
+  // CDB/LCI/LCA: rentabilidade acumulada % informada pelo usuário
+  accumulatedReturn Float?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 }
