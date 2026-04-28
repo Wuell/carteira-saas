@@ -18,7 +18,6 @@ type AssetRow = {
 }
 
 type Portfolio = { assets: AssetRow[] }
-
 type Category = 'stock' | 'crypto' | 'fixed'
 type FixedSub = 'cdb' | 'tesouro'
 type SortKey = 'ticker' | 'type' | 'currentValue' | 'returnPct'
@@ -43,6 +42,129 @@ async function fetchPortfolio(): Promise<Portfolio> {
   return res.json()
 }
 
+// ---------- Edit Modal ----------
+type EditForm = { quantity: string; avgPrice: string; fixedRate: string; startDate: string }
+
+function EditModal({ asset, onClose, onSave, saving }: {
+  asset: AssetRow
+  onClose: () => void
+  onSave: (form: EditForm) => void
+  saving: boolean
+}) {
+  const isFixed = asset.type === 'fixed'
+  const isTesouro = isFixed && !!asset.startDate
+
+  const [form, setForm] = useState<EditForm>({
+    quantity: String(asset.quantity),
+    avgPrice: String(asset.avgPrice),
+    fixedRate: asset.fixedRate != null ? String(asset.fixedRate) : '',
+    startDate: asset.startDate ? asset.startDate.slice(0, 10) : '',
+  })
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-md rounded-2xl border bg-white p-6 shadow-xl flex flex-col gap-5">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-base font-semibold text-zinc-900">Editar ativo</p>
+            <p className="text-xs text-zinc-400 mt-0.5">{asset.ticker} · {TYPE_LABELS[asset.type] ?? asset.type}</p>
+          </div>
+          <button onClick={onClose} className="text-zinc-400 hover:text-zinc-600 text-xl leading-none">×</button>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          {/* Quantidade — todos os tipos */}
+          {(!isFixed || isTesouro) && (
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-zinc-500">
+                {isTesouro ? 'Quantidade de títulos' : 'Quantidade'}
+              </label>
+              <input
+                type="number"
+                step="any"
+                className="rounded-lg border px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                value={form.quantity}
+                onChange={e => setForm(f => ({ ...f, quantity: e.target.value }))}
+              />
+            </div>
+          )}
+
+          {/* Preço / Valor investido */}
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-zinc-500">
+              {isTesouro ? 'Preço por título (R$)' : isFixed ? 'Valor investido (R$)' : 'Preço médio (R$)'}
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              className="rounded-lg border px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+              value={form.avgPrice}
+              onChange={e => setForm(f => ({ ...f, avgPrice: e.target.value }))}
+            />
+          </div>
+
+          {/* CDB: rentabilidade */}
+          {isFixed && !isTesouro && (
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-zinc-500">Rentabilidade acumulada (%)</label>
+              <input
+                type="number"
+                step="0.01"
+                className="rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                placeholder="ex: 24.74"
+                value={form.fixedRate}
+                onChange={e => setForm(f => ({ ...f, fixedRate: e.target.value }))}
+              />
+              <p className="text-xs text-zinc-400">Valor exibido no app da corretora.</p>
+            </div>
+          )}
+
+          {/* Tesouro: taxa + data */}
+          {isTesouro && (
+            <>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-zinc-500">Taxa ao ano (%)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                  placeholder="ex: 13.5"
+                  value={form.fixedRate}
+                  onChange={e => setForm(f => ({ ...f, fixedRate: e.target.value }))}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-zinc-500">Data da aplicação</label>
+                <input
+                  type="date"
+                  className="rounded-lg border px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                  value={form.startDate}
+                  onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))}
+                />
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="flex gap-2 justify-end pt-1">
+          <button onClick={onClose}
+            className="rounded-lg px-4 py-2 text-sm text-zinc-500 hover:text-zinc-700 transition-colors">
+            Cancelar
+          </button>
+          <button
+            onClick={() => onSave(form)}
+            disabled={saving}
+            className="rounded-lg bg-zinc-900 px-5 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50 transition-colors">
+            {saving ? 'Salvando...' : 'Salvar'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ---------- Main Component ----------
 export function AssetManager() {
   const queryClient = useQueryClient()
 
@@ -57,8 +179,7 @@ export function AssetManager() {
 
   // Table state
   const [sort, setSort] = useState<{ key: SortKey; dir: 'asc' | 'desc' }>({ key: 'currentValue', dir: 'desc' })
-  const [editId, setEditId] = useState<string | null>(null)
-  const [editForm, setEditForm] = useState({ quantity: '', avgPrice: '', fixedRate: '', startDate: '' })
+  const [editAsset, setEditAsset] = useState<AssetRow | null>(null)
 
   function selectCategory(cat: Category) {
     setSelectedCategory(cat)
@@ -78,16 +199,6 @@ export function AssetManager() {
   function goBack() {
     if (fixedSub) { setFixedSub(null); setError('') }
     else { setSelectedCategory(null); setError(''); setTickerError('') }
-  }
-
-  function startEdit(asset: AssetRow) {
-    setEditId(asset.id)
-    setEditForm({
-      quantity: asset.type !== 'fixed' ? String(asset.quantity) : '',
-      avgPrice: asset.type !== 'fixed' ? String(asset.avgPrice) : '',
-      fixedRate: asset.fixedRate != null ? String(asset.fixedRate) : '',
-      startDate: asset.startDate ? asset.startDate.slice(0, 10) : '',
-    })
   }
 
   function toggleSort(key: SortKey) {
@@ -135,7 +246,6 @@ export function AssetManager() {
       return res.json()
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['assets'] })
       queryClient.invalidateQueries({ queryKey: ['portfolio'] })
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
       setForm(f => ({ ...f, ticker: '', quantity: '', price: '', startDate: '', fixedRate: '' }))
@@ -146,14 +256,13 @@ export function AssetManager() {
   })
 
   const editMutation = useMutation({
-    mutationFn: async ({ id, ...data }: { id: string } & typeof editForm) => {
-      const res = await fetch('/api/assets', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...data }) })
-      if (!res.ok) throw new Error('Falha ao editar ativo')
+    mutationFn: async ({ id, ...fields }: { id: string } & EditForm) => {
+      const res = await fetch('/api/assets', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...fields }) })
+      if (!res.ok) throw new Error('Falha ao salvar')
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['assets'] })
       queryClient.invalidateQueries({ queryKey: ['portfolio'] })
-      setEditId(null)
+      setEditAsset(null)
     },
   })
 
@@ -162,10 +271,7 @@ export function AssetManager() {
       const res = await fetch('/api/assets', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
       if (!res.ok) throw new Error('Falha ao remover ativo')
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['assets'] })
-      queryClient.invalidateQueries({ queryKey: ['portfolio'] })
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['portfolio'] }),
   })
 
   function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
@@ -174,267 +280,228 @@ export function AssetManager() {
     if (!form.ticker || !form.price || !form.type) { setError('Preencha todos os campos obrigatórios.'); return }
     if (!isFixed && !form.quantity) { setError('Informe a quantidade.'); return }
     if (fixedSub === 'tesouro' && (!form.fixedRate || !form.startDate)) { setError('Informe a taxa ao ano e a data da aplicação.'); return }
-    addMutation.mutate({ ...form, quantity: isFixed ? '1' : form.quantity })
+    addMutation.mutate({ ...form, quantity: isFixed && fixedSub === 'cdb' ? '1' : form.quantity })
   }
 
   function SortHeader({ label, sortKey }: { label: string; sortKey: SortKey }) {
     const active = sort.key === sortKey
     return (
-      <th
-        className="px-4 py-3 cursor-pointer select-none hover:text-zinc-700 transition-colors"
-        onClick={() => toggleSort(sortKey)}
-      >
+      <th className="px-4 py-3 cursor-pointer select-none hover:text-zinc-700 transition-colors" onClick={() => toggleSort(sortKey)}>
         <span className="flex items-center gap-1">
           {label}
-          <span className={active ? 'text-zinc-700' : 'text-zinc-300'}>
-            {active ? (sort.dir === 'asc' ? '↑' : '↓') : '↕'}
-          </span>
+          <span className={active ? 'text-zinc-700' : 'text-zinc-300'}>{active ? (sort.dir === 'asc' ? '↑' : '↓') : '↕'}</span>
         </span>
       </th>
     )
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Form card */}
-      <div className="rounded-xl border bg-white p-6 shadow-sm flex flex-col gap-5">
-        <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold text-zinc-900">Registrar operação</h2>
-          {selectedCategory && (
-            <button type="button" onClick={goBack} className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors">
-              ← Trocar categoria
-            </button>
-          )}
-        </div>
+    <>
+      {editAsset && (
+        <EditModal
+          asset={editAsset}
+          onClose={() => setEditAsset(null)}
+          saving={editMutation.isPending}
+          onSave={fields => editMutation.mutate({ id: editAsset.id, ...fields })}
+        />
+      )}
 
-        {!selectedCategory ? (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {CATEGORIES.map(cat => (
-              <button key={cat.id} type="button" onClick={() => selectCategory(cat.id)}
-                className="flex flex-col items-start gap-1.5 rounded-xl border-2 border-zinc-100 bg-zinc-50 p-4 text-left transition-all hover:border-zinc-300 hover:bg-white hover:shadow-sm">
-                <span className="text-2xl">{cat.icon}</span>
-                <span className="text-sm font-semibold text-zinc-900">{cat.label}</span>
-                <span className="text-xs text-zinc-400">{cat.description}</span>
+      <div className="flex flex-col gap-6">
+        {/* Form card */}
+        <div className="rounded-xl border bg-white p-6 shadow-sm flex flex-col gap-5">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-semibold text-zinc-900">Registrar operação</h2>
+            {selectedCategory && (
+              <button type="button" onClick={goBack} className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors">
+                ← Trocar categoria
               </button>
-            ))}
+            )}
           </div>
-        ) : selectedCategory === 'fixed' && !fixedSub ? (
-          <div className="flex flex-col gap-3">
-            <p className="text-xs text-zinc-500">Selecione o tipo de investimento:</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <button type="button" onClick={() => selectFixedSub('cdb')}
-                className="flex flex-col items-start gap-1.5 rounded-xl border-2 border-zinc-100 bg-zinc-50 p-4 text-left transition-all hover:border-zinc-300 hover:bg-white hover:shadow-sm">
-                <span className="text-2xl">🏦</span>
-                <span className="text-sm font-semibold text-zinc-900">CDB / LCI / LCA</span>
-                <span className="text-xs text-zinc-400">Liquidez diária — informe a rentabilidade acumulada do app</span>
-              </button>
-              <button type="button" onClick={() => selectFixedSub('tesouro')}
-                className="flex flex-col items-start gap-1.5 rounded-xl border-2 border-zinc-100 bg-zinc-50 p-4 text-left transition-all hover:border-zinc-300 hover:bg-white hover:shadow-sm">
-                <span className="text-2xl">🇧🇷</span>
-                <span className="text-sm font-semibold text-zinc-900">Tesouro Direto</span>
-                <span className="text-xs text-zinc-400">Prefixado — informe a taxa ao ano e a data da compra</span>
-              </button>
-            </div>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {error && <p className="text-sm text-red-500">{error}</p>}
-            <div className="flex gap-2">
-              {(['BUY', 'SELL'] as const).map(op => (
-                <button key={op} type="button" onClick={() => setForm(f => ({ ...f, operation: op }))}
-                  className={`rounded-lg px-4 py-1.5 text-sm font-medium transition-colors ${form.operation === op ? op === 'BUY' ? 'bg-green-600 text-white' : 'bg-red-500 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>
-                  {op === 'BUY' ? 'Compra' : 'Venda'}
+
+          {!selectedCategory ? (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {CATEGORIES.map(cat => (
+                <button key={cat.id} type="button" onClick={() => selectCategory(cat.id)}
+                  className="flex flex-col items-start gap-1.5 rounded-xl border-2 border-zinc-100 bg-zinc-50 p-4 text-left transition-all hover:border-zinc-300 hover:bg-white hover:shadow-sm">
+                  <span className="text-2xl">{cat.icon}</span>
+                  <span className="text-sm font-semibold text-zinc-900">{cat.label}</span>
+                  <span className="text-xs text-zinc-400">{cat.description}</span>
                 </button>
               ))}
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-500">
-                  {selectedCategory === 'fixed' ? 'Nome do investimento' : selectedCategory === 'stock' ? 'Ticker (B3)' : 'Símbolo'}
-                </label>
-                <div className="relative">
-                  <input
-                    className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 ${tickerError ? 'border-red-300' : ''}`}
-                    placeholder={selectedCategory === 'fixed' ? 'ex: Tesouro Prefixado 2032' : selectedCategory === 'stock' ? 'ex: PETR4, MXRF11' : 'ex: BTC, ETH, SOL'}
-                    value={form.ticker}
-                    onChange={e => setForm(f => ({ ...f, ticker: e.target.value }))}
-                  />
-                  {fetchingPrice && <span className="absolute right-3 top-2.5 text-xs text-zinc-400">buscando...</span>}
-                </div>
-                {tickerError && <p className="text-xs text-red-500 mt-1">{tickerError}</p>}
-                {form.price && !tickerError && selectedCategory !== 'fixed' && (
-                  <p className="text-xs text-green-600 mt-1">Cotação atual detectada</p>
-                )}
-              </div>
-
-              {selectedCategory !== 'fixed' && (
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs text-zinc-500">Quantidade</label>
-                  <input type="number"
-                    className="rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
-                    placeholder="ex: 10" value={form.quantity}
-                    onChange={e => setForm(f => ({ ...f, quantity: e.target.value }))} />
-                </div>
-              )}
-
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-500">{selectedCategory === 'fixed' ? 'Valor investido (R$)' : 'Preço unitário (R$)'}</label>
-                <input type="number" step="0.01"
-                  className="rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
-                  placeholder={fetchingPrice ? 'Buscando...' : selectedCategory === 'fixed' ? 'ex: 5000.00' : 'ex: 32.50'}
-                  value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} />
+          ) : selectedCategory === 'fixed' && !fixedSub ? (
+            <div className="flex flex-col gap-3">
+              <p className="text-xs text-zinc-500">Selecione o tipo de investimento:</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button type="button" onClick={() => selectFixedSub('cdb')}
+                  className="flex flex-col items-start gap-1.5 rounded-xl border-2 border-zinc-100 bg-zinc-50 p-4 text-left transition-all hover:border-zinc-300 hover:bg-white hover:shadow-sm">
+                  <span className="text-2xl">🏦</span>
+                  <span className="text-sm font-semibold text-zinc-900">CDB / LCI / LCA</span>
+                  <span className="text-xs text-zinc-400">Liquidez diária — informe a rentabilidade acumulada do app</span>
+                </button>
+                <button type="button" onClick={() => selectFixedSub('tesouro')}
+                  className="flex flex-col items-start gap-1.5 rounded-xl border-2 border-zinc-100 bg-zinc-50 p-4 text-left transition-all hover:border-zinc-300 hover:bg-white hover:shadow-sm">
+                  <span className="text-2xl">🇧🇷</span>
+                  <span className="text-sm font-semibold text-zinc-900">Tesouro Direto</span>
+                  <span className="text-xs text-zinc-400">Prefixado — informe a taxa ao ano e a data da compra</span>
+                </button>
               </div>
             </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              {error && <p className="text-sm text-red-500">{error}</p>}
+              <div className="flex gap-2">
+                {(['BUY', 'SELL'] as const).map(op => (
+                  <button key={op} type="button" onClick={() => setForm(f => ({ ...f, operation: op }))}
+                    className={`rounded-lg px-4 py-1.5 text-sm font-medium transition-colors ${form.operation === op ? op === 'BUY' ? 'bg-green-600 text-white' : 'bg-red-500 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>
+                    {op === 'BUY' ? 'Compra' : 'Venda'}
+                  </button>
+                ))}
+              </div>
 
-            {fixedSub === 'cdb' && (
-              <div className="flex flex-col gap-3 p-4 rounded-lg bg-zinc-50 border border-zinc-200">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs text-zinc-500">Rentabilidade acumulada (%)</label>
+                  <label className="text-xs text-zinc-500">
+                    {selectedCategory === 'fixed' ? 'Nome do investimento' : selectedCategory === 'stock' ? 'Ticker (B3)' : 'Símbolo'}
+                  </label>
+                  <div className="relative">
+                    <input
+                      className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 ${tickerError ? 'border-red-300' : ''}`}
+                      placeholder={selectedCategory === 'fixed' ? 'ex: Tesouro Prefixado 2032' : selectedCategory === 'stock' ? 'ex: PETR4, MXRF11' : 'ex: BTC, ETH, SOL'}
+                      value={form.ticker}
+                      onChange={e => setForm(f => ({ ...f, ticker: e.target.value }))}
+                    />
+                    {fetchingPrice && <span className="absolute right-3 top-2.5 text-xs text-zinc-400">buscando...</span>}
+                  </div>
+                  {tickerError && <p className="text-xs text-red-500 mt-1">{tickerError}</p>}
+                  {form.price && !tickerError && selectedCategory !== 'fixed' && (
+                    <p className="text-xs text-green-600 mt-1">Cotação atual detectada</p>
+                  )}
+                </div>
+
+                {(selectedCategory !== 'fixed' || fixedSub === 'tesouro') && (
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-zinc-500">
+                      {fixedSub === 'tesouro' ? 'Quantidade de títulos' : 'Quantidade'}
+                    </label>
+                    <input type="number" step="any"
+                      className="rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                      placeholder="ex: 0.5" value={form.quantity}
+                      onChange={e => setForm(f => ({ ...f, quantity: e.target.value }))} />
+                  </div>
+                )}
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-zinc-500">
+                    {fixedSub === 'tesouro' ? 'Preço por título (R$)' : selectedCategory === 'fixed' ? 'Valor investido (R$)' : 'Preço unitário (R$)'}
+                  </label>
                   <input type="number" step="0.01"
                     className="rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
-                    placeholder="ex: 24.74" value={form.fixedRate}
-                    onChange={e => setForm(f => ({ ...f, fixedRate: e.target.value }))} />
+                    placeholder={fetchingPrice ? 'Buscando...' : selectedCategory === 'fixed' ? 'ex: 5000.00' : 'ex: 32.50'}
+                    value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} />
                 </div>
-                <p className="text-xs text-zinc-400">Informe a rentabilidade que aparece no app (ex: Inter, Rico). Atualize quando quiser ver o valor corrigido.</p>
               </div>
-            )}
 
-            {fixedSub === 'tesouro' && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-lg bg-zinc-50 border border-zinc-200">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs text-zinc-500">Taxa ao ano (%)</label>
-                  <input type="number" step="0.01"
-                    className="rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
-                    placeholder="ex: 13.5" value={form.fixedRate}
-                    onChange={e => setForm(f => ({ ...f, fixedRate: e.target.value }))} />
+              {fixedSub === 'cdb' && (
+                <div className="flex flex-col gap-3 p-4 rounded-lg bg-zinc-50 border border-zinc-200">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-zinc-500">Rentabilidade acumulada (%)</label>
+                    <input type="number" step="0.01"
+                      className="rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                      placeholder="ex: 24.74" value={form.fixedRate}
+                      onChange={e => setForm(f => ({ ...f, fixedRate: e.target.value }))} />
+                  </div>
+                  <p className="text-xs text-zinc-400">Informe a rentabilidade que aparece no app (ex: Inter, Rico).</p>
                 </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs text-zinc-500">Data da aplicação</label>
-                  <input type="date"
-                    className="rounded-lg border px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300"
-                    value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} />
+              )}
+
+              {fixedSub === 'tesouro' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-lg bg-zinc-50 border border-zinc-200">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-zinc-500">Taxa ao ano (%)</label>
+                    <input type="number" step="0.01"
+                      className="rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                      placeholder="ex: 13.5" value={form.fixedRate}
+                      onChange={e => setForm(f => ({ ...f, fixedRate: e.target.value }))} />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-zinc-500">Data da aplicação</label>
+                    <input type="date"
+                      className="rounded-lg border px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                      value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} />
+                  </div>
+                  <p className="sm:col-span-2 text-xs text-zinc-400">Informe a taxa contratada na compra. O rendimento é calculado automaticamente.</p>
                 </div>
-                <p className="sm:col-span-2 text-xs text-zinc-400">Informe a taxa contratada na compra. O rendimento é calculado automaticamente.</p>
-              </div>
-            )}
+              )}
 
-            <button type="submit" disabled={addMutation.isPending || fetchingPrice}
-              className={`self-start rounded-lg px-5 py-2 text-sm font-medium text-white disabled:opacity-50 transition-colors ${form.operation === 'BUY' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-500 hover:bg-red-600'}`}>
-              {addMutation.isPending ? 'Registrando...' : form.operation === 'BUY' ? 'Registrar compra' : 'Registrar venda'}
-            </button>
-          </form>
-        )}
-      </div>
-
-      {/* Assets table */}
-      <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b">
-          <p className="text-sm font-semibold text-zinc-900">Posição atual</p>
+              <button type="submit" disabled={addMutation.isPending || fetchingPrice}
+                className={`self-start rounded-lg px-5 py-2 text-sm font-medium text-white disabled:opacity-50 transition-colors ${form.operation === 'BUY' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-500 hover:bg-red-600'}`}>
+                {addMutation.isPending ? 'Registrando...' : form.operation === 'BUY' ? 'Registrar compra' : 'Registrar venda'}
+              </button>
+            </form>
+          )}
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-zinc-50 text-left text-xs text-zinc-500 uppercase tracking-wider">
-                <SortHeader label="Ticker" sortKey="ticker" />
-                <SortHeader label="Tipo" sortKey="type" />
-                <th className="px-4 py-3">Qtd</th>
-                <th className="px-4 py-3">Preço médio</th>
-                <th className="px-4 py-3">Cotação atual</th>
-                <SortHeader label="Valor total" sortKey="currentValue" />
-                <SortHeader label="P&L" sortKey="returnPct" />
-                <th className="px-4 py-3"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading && (
-                <tr><td colSpan={8} className="px-4 py-6 text-center text-zinc-400">Carregando...</td></tr>
-              )}
-              {!isLoading && assets.length === 0 && (
-                <tr><td colSpan={8} className="px-4 py-6 text-center text-zinc-400">Nenhum ativo cadastrado.</td></tr>
-              )}
-              {assets.map(asset => {
-                const isEditing = editId === asset.id
-                const positive = asset.returnPct >= 0
-                const isFixed = asset.type === 'fixed'
-                const isTesouro = isFixed && !!asset.startDate
 
-                return (
-                  <tr key={asset.id} className="border-b last:border-0 hover:bg-zinc-50 transition-colors">
-                    <td className="px-4 py-3 font-medium text-zinc-900">{asset.ticker}</td>
-                    <td className="px-4 py-3 text-zinc-500">{TYPE_LABELS[asset.type] ?? asset.type}</td>
-
-                    {isEditing ? (
-                      <>
-                        <td className="px-4 py-2" colSpan={isFixed ? 2 : 2}>
-                          {!isFixed ? (
-                            <div className="flex gap-2">
-                              <input type="number" className="w-24 rounded border px-2 py-1 text-xs text-zinc-900"
-                                placeholder="Qtd" value={editForm.quantity}
-                                onChange={e => setEditForm(f => ({ ...f, quantity: e.target.value }))} />
-                              <input type="number" step="0.01" className="w-28 rounded border px-2 py-1 text-xs text-zinc-900"
-                                placeholder="Preço médio" value={editForm.avgPrice}
-                                onChange={e => setEditForm(f => ({ ...f, avgPrice: e.target.value }))} />
-                            </div>
-                          ) : isTesouro ? (
-                            <div className="flex gap-2">
-                              <input type="number" step="0.01" className="w-24 rounded border px-2 py-1 text-xs text-zinc-900"
-                                placeholder="Taxa a.a. %" value={editForm.fixedRate}
-                                onChange={e => setEditForm(f => ({ ...f, fixedRate: e.target.value }))} />
-                              <input type="date" className="w-36 rounded border px-2 py-1 text-xs text-zinc-900"
-                                value={editForm.startDate}
-                                onChange={e => setEditForm(f => ({ ...f, startDate: e.target.value }))} />
-                            </div>
-                          ) : (
-                            <input type="number" step="0.01" className="w-32 rounded border px-2 py-1 text-xs text-zinc-900"
-                              placeholder="Rentabilidade %" value={editForm.fixedRate}
-                              onChange={e => setEditForm(f => ({ ...f, fixedRate: e.target.value }))} />
-                          )}
-                        </td>
-                        <td className="px-4 py-2" colSpan={3} />
-                        <td className="px-4 py-2">
-                          <div className="flex gap-2">
-                            <button onClick={() => editMutation.mutate({ id: asset.id, ...editForm })}
-                              disabled={editMutation.isPending}
-                              className="text-xs font-medium text-green-600 hover:text-green-700 disabled:opacity-50">
-                              Salvar
-                            </button>
-                            <button onClick={() => setEditId(null)} className="text-xs text-zinc-400 hover:text-zinc-600">
-                              Cancelar
-                            </button>
-                          </div>
-                        </td>
-                      </>
-                    ) : (
-                      <>
-                        <td className="px-4 py-3 text-zinc-700">{isFixed ? '—' : asset.quantity}</td>
-                        <td className="px-4 py-3 text-zinc-700">{formatBRL(asset.avgPrice)}</td>
-                        <td className="px-4 py-3 text-zinc-700">{isFixed ? '—' : formatBRL(asset.currentPrice)}</td>
-                        <td className="px-4 py-3 text-zinc-700">{formatBRL(asset.currentValue)}</td>
-                        <td className={`px-4 py-3 font-medium ${positive ? 'text-green-600' : 'text-red-500'}`}>
-                          {positive ? '+' : ''}{asset.returnPct.toFixed(2)}%
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex gap-3">
-                            <button onClick={() => startEdit(asset)}
-                              className="text-xs text-zinc-500 hover:text-zinc-800 transition-colors">
-                              Editar
-                            </button>
-                            <button onClick={() => deleteMutation.mutate(asset.id)} disabled={deleteMutation.isPending}
-                              className="text-xs text-red-500 hover:text-red-700 disabled:opacity-50">
-                              Remover
-                            </button>
-                          </div>
-                        </td>
-                      </>
-                    )}
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+        {/* Assets table */}
+        <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b">
+            <p className="text-sm font-semibold text-zinc-900">Posição atual</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b bg-zinc-50 text-left text-xs text-zinc-500 uppercase tracking-wider">
+                  <SortHeader label="Ticker" sortKey="ticker" />
+                  <SortHeader label="Tipo" sortKey="type" />
+                  <th className="px-4 py-3">Qtd</th>
+                  <th className="px-4 py-3">Preço médio</th>
+                  <th className="px-4 py-3">Cotação atual</th>
+                  <SortHeader label="Valor total" sortKey="currentValue" />
+                  <SortHeader label="P&L" sortKey="returnPct" />
+                  <th className="px-4 py-3"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {isLoading && (
+                  <tr><td colSpan={8} className="px-4 py-6 text-center text-zinc-400">Carregando...</td></tr>
+                )}
+                {!isLoading && assets.length === 0 && (
+                  <tr><td colSpan={8} className="px-4 py-6 text-center text-zinc-400">Nenhum ativo cadastrado.</td></tr>
+                )}
+                {assets.map(asset => {
+                  const positive = asset.returnPct >= 0
+                  const isFixed = asset.type === 'fixed'
+                  return (
+                    <tr key={asset.id} className="border-b last:border-0 hover:bg-zinc-50 transition-colors">
+                      <td className="px-4 py-3 font-medium text-zinc-900">{asset.ticker}</td>
+                      <td className="px-4 py-3 text-zinc-500">{TYPE_LABELS[asset.type] ?? asset.type}</td>
+                      <td className="px-4 py-3 text-zinc-700">{isFixed ? '—' : asset.quantity}</td>
+                      <td className="px-4 py-3 text-zinc-700">{formatBRL(asset.avgPrice)}</td>
+                      <td className="px-4 py-3 text-zinc-700">{isFixed ? '—' : formatBRL(asset.currentPrice)}</td>
+                      <td className="px-4 py-3 text-zinc-700">{formatBRL(asset.currentValue)}</td>
+                      <td className={`px-4 py-3 font-medium ${positive ? 'text-green-600' : 'text-red-500'}`}>
+                        {positive ? '+' : ''}{asset.returnPct.toFixed(2)}%
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex gap-3">
+                          <button onClick={() => setEditAsset(asset)}
+                            className="text-xs text-zinc-500 hover:text-zinc-800 transition-colors">
+                            Editar
+                          </button>
+                          <button onClick={() => deleteMutation.mutate(asset.id)} disabled={deleteMutation.isPending}
+                            className="text-xs text-red-500 hover:text-red-700 disabled:opacity-50">
+                            Remover
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
