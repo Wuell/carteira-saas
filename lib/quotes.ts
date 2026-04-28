@@ -83,9 +83,33 @@ export async function detectTickerType(ticker: string): Promise<{ type: string; 
 
 type AssetOpts = {
   avgPrice?: number
+  subType?: string | null
   startDate?: Date | null
   maturityDate?: Date | null
   fixedRate?: number | null
+}
+
+// Busca CDI diário (série 12 do BCB) e retorna o fator acumulado para o período.
+// Retorna 1 (sem rendimento) em caso de falha.
+async function fetchCdiAccumulatedFactor(startDate: Date, cdiPct: number): Promise<number> {
+  const fmt = (d: Date) =>
+    `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`
+  const url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados?formato=json&dataInicial=${fmt(startDate)}&dataFinal=${fmt(new Date())}`
+  try {
+    const res = await fetch(url, { next: { revalidate: 3600 } })
+    if (!res.ok) return 1
+    const data: Array<{ data: string; valor: string }> = await res.json()
+    if (!data.length) return 1
+    // Cada item é a taxa CDI diária em %. Para CDB a X% do CDI:
+    // fator_dia = 1 + (taxa_dia/100 × cdiPct/100)
+    let factor = 1
+    for (const item of data) {
+      factor *= 1 + (Number(item.valor) / 100) * (cdiPct / 100)
+    }
+    return factor
+  } catch {
+    return 1
+  }
 }
 
 // Conta dias úteis (seg-sex) entre duas datas, sem considerar feriados.
@@ -129,22 +153,26 @@ export async function getQuote(ticker: string, type: string, opts?: AssetOpts): 
     }
 
     if (type === 'fixed') {
-      const { avgPrice, fixedRate, startDate, maturityDate } = opts ?? {}
+      const { avgPrice, subType, fixedRate, startDate, maturityDate } = opts ?? {}
       if (!avgPrice) return 0
       if (!fixedRate) return avgPrice
 
-      if (startDate) {
-        // Usa a data de vencimento como teto: após vencer, o valor não cresce mais
+      // Tesouro Direto: juros compostos com dias úteis / 252
+      if (subType === 'tesouro' && startDate) {
         const now = new Date()
         const maturity = maturityDate ? new Date(maturityDate) : null
         const effectiveEnd = maturity && maturity < now ? maturity : now
-
-        // Dias úteis / 252 — convenção do mercado brasileiro para renda fixa
         const weekdays = countWeekdays(new Date(startDate), effectiveEnd)
         return avgPrice * Math.pow(1 + fixedRate / 100, weekdays / 252)
       }
 
-      // CDB / LCI / LCA: rentabilidade acumulada informada manualmente
+      // CDB: fixedRate = % do CDI (ex: 102). Busca CDI acumulado via BCB.
+      if (subType === 'cdb' && startDate) {
+        const factor = await fetchCdiAccumulatedFactor(new Date(startDate), fixedRate)
+        return avgPrice * factor
+      }
+
+      // Fallback: rentabilidade acumulada informada manualmente
       return avgPrice * (1 + fixedRate / 100)
     }
   } catch {

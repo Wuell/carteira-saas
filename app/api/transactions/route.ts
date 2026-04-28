@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
-  const { ticker, type, operation, quantity, price, startDate, maturityDate, fixedRate } = await req.json()
+  const { ticker, type, operation, quantity, price, subType, startDate, maturityDate, fixedRate } = await req.json()
   if (!ticker || !type || !operation || !quantity || !price) {
     return NextResponse.json({ error: 'Campos obrigatórios ausentes' }, { status: 400 })
   }
@@ -47,6 +47,7 @@ export async function POST(req: NextRequest) {
         data: {
           quantity: totalQty,
           avgPrice: newAvgPrice,
+          ...(subType && { subType }),
           ...(startDate && { startDate: new Date(startDate) }),
           ...(maturityDate && { maturityDate: new Date(maturityDate) }),
           ...(fixedRate && { fixedRate: Number(fixedRate) }),
@@ -60,6 +61,7 @@ export async function POST(req: NextRequest) {
           quantity: qty,
           avgPrice: prc,
           userId: user.id,
+          ...(subType && { subType }),
           ...(startDate && { startDate: new Date(startDate) }),
           ...(maturityDate && { maturityDate: new Date(maturityDate) }),
           ...(fixedRate && { fixedRate: Number(fixedRate) }),

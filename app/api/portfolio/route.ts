@@ -29,6 +29,7 @@ export async function GET() {
     assets.map(async (asset: Asset) => {
       const currentPrice = await getQuote(asset.ticker, asset.type, {
         avgPrice: asset.avgPrice,
+        subType: asset.subType,
         startDate: asset.startDate,
         maturityDate: asset.maturityDate,
         fixedRate: asset.fixedRate,

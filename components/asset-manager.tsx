@@ -7,6 +7,7 @@ type AssetRow = {
   id: string
   ticker: string
   type: string
+  subType?: string | null
   quantity: number
   avgPrice: number
   currentPrice: number
@@ -46,7 +47,7 @@ async function fetchPortfolio(): Promise<Portfolio> {
 }
 
 // ---------- Edit Modal ----------
-type EditForm = { quantity: string; avgPrice: string; fixedRate: string; startDate: string; maturityDate: string }
+type EditForm = { quantity: string; avgPrice: string; subType: string; fixedRate: string; startDate: string; maturityDate: string }
 
 function EditModal({ asset, onClose, onSave, saving }: {
   asset: AssetRow
@@ -55,11 +56,13 @@ function EditModal({ asset, onClose, onSave, saving }: {
   saving: boolean
 }) {
   const isFixed = asset.type === 'fixed'
-  const isTesouro = isFixed && !!asset.startDate
+  const isTesouro = asset.subType === 'tesouro'
+  const isCdb = asset.subType === 'cdb'
 
   const [form, setForm] = useState<EditForm>({
     quantity: !isFixed ? String(asset.quantity) : '',
     avgPrice: String(asset.avgPrice),
+    subType: asset.subType ?? '',
     fixedRate: asset.fixedRate != null ? String(asset.fixedRate) : '',
     startDate: asset.startDate ? asset.startDate.slice(0, 10) : '',
     maturityDate: asset.maturityDate ? asset.maturityDate.slice(0, 10) : '',
@@ -107,20 +110,31 @@ function EditModal({ asset, onClose, onSave, saving }: {
             {isFixed && <p className="text-xs text-zinc-400">Ex: R$ 236,32 — o total que você pagou.</p>}
           </div>
 
-          {/* CDB: rentabilidade */}
-          {isFixed && !isTesouro && (
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-zinc-500">Rentabilidade acumulada (%)</label>
-              <input
-                type="number"
-                step="0.01"
-                className="rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
-                placeholder="ex: 24.74"
-                value={form.fixedRate}
-                onChange={e => setForm(f => ({ ...f, fixedRate: e.target.value }))}
-              />
-              <p className="text-xs text-zinc-400">Valor exibido no app da corretora.</p>
-            </div>
+          {/* CDB: % do CDI + data de aplicação */}
+          {isCdb && (
+            <>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-zinc-500">% do CDI contratada</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                  placeholder="ex: 102"
+                  value={form.fixedRate}
+                  onChange={e => setForm(f => ({ ...f, fixedRate: e.target.value }))}
+                />
+                <p className="text-xs text-zinc-400">Ex: 102 para CDB a 102% do CDI.</p>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-zinc-500">Data da aplicação</label>
+                <input
+                  type="date"
+                  className="rounded-lg border px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                  value={form.startDate}
+                  onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))}
+                />
+              </div>
+            </>
           )}
 
           {/* Tesouro: taxa + data */}
@@ -186,7 +200,7 @@ export function AssetManager() {
   // Form state
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
   const [fixedSub, setFixedSub] = useState<FixedSub | null>(null)
-  const [form, setForm] = useState({ ticker: '', type: '', operation: 'BUY', quantity: '', price: '', startDate: '', maturityDate: '', fixedRate: '' })
+  const [form, setForm] = useState({ ticker: '', type: '', operation: 'BUY', quantity: '', price: '', subType: '', startDate: '', maturityDate: '', fixedRate: '' })
   const [error, setError] = useState('')
   const [tickerError, setTickerError] = useState('')
   const [fetchingPrice, setFetchingPrice] = useState(false)
@@ -200,14 +214,14 @@ export function AssetManager() {
     setSelectedCategory(cat)
     setFixedSub(null)
     const apiType = CATEGORIES.find(c => c.id === cat)!.apiType
-    setForm({ ticker: '', type: apiType, operation: 'BUY', quantity: '', price: '', startDate: '', maturityDate: '', fixedRate: '' })
+    setForm({ ticker: '', type: apiType, operation: 'BUY', quantity: '', price: '', subType: '', startDate: '', maturityDate: '', fixedRate: '' })
     setError('')
     setTickerError('')
   }
 
   function selectFixedSub(sub: FixedSub) {
     setFixedSub(sub)
-    setForm(f => ({ ...f, ticker: '', price: '', startDate: '', maturityDate: '', fixedRate: '' }))
+    setForm(f => ({ ...f, ticker: '', price: '', subType: sub, startDate: '', maturityDate: '', fixedRate: '' }))
     setError('')
   }
 
@@ -263,7 +277,7 @@ export function AssetManager() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['portfolio'] })
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
-      setForm(f => ({ ...f, ticker: '', quantity: '', price: '', startDate: '', maturityDate: '', fixedRate: '' }))
+      setForm(f => ({ ...f, ticker: '', quantity: '', price: '', subType: '', startDate: '', maturityDate: '', fixedRate: '' }))
       setError('')
       setTickerError('')
     },
@@ -416,15 +430,21 @@ export function AssetManager() {
               </div>
 
               {fixedSub === 'cdb' && (
-                <div className="flex flex-col gap-3 p-4 rounded-lg bg-zinc-50 border border-zinc-200">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-lg bg-zinc-50 border border-zinc-200">
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs text-zinc-500">Rentabilidade acumulada (%)</label>
+                    <label className="text-xs text-zinc-500">% do CDI contratada</label>
                     <input type="number" step="0.01"
                       className="rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
-                      placeholder="ex: 24.74" value={form.fixedRate}
+                      placeholder="ex: 102" value={form.fixedRate}
                       onChange={e => setForm(f => ({ ...f, fixedRate: e.target.value }))} />
+                    <p className="text-xs text-zinc-400">Ex: 102 para CDB a 102% do CDI.</p>
                   </div>
-                  <p className="text-xs text-zinc-400">Informe a rentabilidade que aparece no app (ex: Inter, Rico).</p>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-zinc-500">Data da aplicação</label>
+                    <input type="date"
+                      className="rounded-lg border px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                      value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} />
+                  </div>
                 </div>
               )}
 
