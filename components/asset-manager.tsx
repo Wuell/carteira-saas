@@ -295,7 +295,7 @@ export function AssetManager() {
     if (!form.ticker || !form.price || !form.type) { setError('Preencha todos os campos obrigatórios.'); return }
     if (!isFixed && !form.quantity) { setError('Informe a quantidade.'); return }
     if (fixedSub === 'tesouro' && (!form.fixedRate || !form.startDate)) { setError('Informe a taxa ao ano e a data da aplicação.'); return }
-    addMutation.mutate({ ...form, quantity: isFixed && fixedSub === 'cdb' ? '1' : form.quantity })
+    addMutation.mutate({ ...form, quantity: isFixed ? '1' : form.quantity })
   }
 
   function SortHeader({ label, sortKey }: { label: string; sortKey: SortKey }) {
