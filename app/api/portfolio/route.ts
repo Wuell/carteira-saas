@@ -27,19 +27,69 @@ export async function GET() {
 
   const assetsWithQuotes = await Promise.all(
     assets.map(async (asset: Asset) => {
-      const currentPrice = await getQuote(asset.ticker, asset.type, {
-        avgPrice: asset.avgPrice,
-        subType: asset.subType,
-        startDate: asset.startDate,
-        maturityDate: asset.maturityDate,
-        fixedRate: asset.fixedRate,
-      })
-      const currentValue = currentPrice * asset.quantity
-      const investedValue = asset.avgPrice * asset.quantity
+      let currentValue: number
+      let investedValue: number
+
+      if (asset.type === 'fixed') {
+        // Calcula renda fixa por lote: cada BUY transaction com sua própria data e taxa
+        const transactions = await prisma.transaction.findMany({
+          where: { userId: user.id, ticker: asset.ticker, type: 'fixed', operation: 'BUY' },
+        })
+
+        const lotsWithDate = transactions.filter(t => t.startDate && t.fixedRate)
+
+        if (lotsWithDate.length > 0) {
+          // Calcula cada lote individualmente
+          let totalFromLots = 0
+          let investedFromLots = 0
+          for (const tx of lotsWithDate) {
+            const lotCurrent = await getQuote(asset.ticker, 'fixed', {
+              avgPrice: tx.price,
+              subType: tx.subType ?? asset.subType,
+              startDate: tx.startDate,
+              maturityDate: tx.maturityDate ?? asset.maturityDate,
+              fixedRate: tx.fixedRate,
+            })
+            totalFromLots += lotCurrent
+            investedFromLots += tx.price
+          }
+
+          // Transações antigas sem data ficam pelo valor investido (sem rendimento calculado)
+          const lotsWithoutDate = transactions.filter(t => !t.startDate || !t.fixedRate)
+          const investedWithoutDate = lotsWithoutDate.reduce((s, t) => s + t.price, 0)
+          totalFromLots += investedWithoutDate
+          investedFromLots += investedWithoutDate
+
+          currentValue = totalFromLots
+          investedValue = investedFromLots
+        } else {
+          // Nenhum lote com data — fallback para cálculo aggregado do Asset
+          const currentPrice = await getQuote(asset.ticker, asset.type, {
+            avgPrice: asset.avgPrice,
+            subType: asset.subType,
+            startDate: asset.startDate,
+            maturityDate: asset.maturityDate,
+            fixedRate: asset.fixedRate,
+          })
+          currentValue = currentPrice * asset.quantity
+          investedValue = asset.avgPrice * asset.quantity
+        }
+      } else {
+        const currentPrice = await getQuote(asset.ticker, asset.type, {
+          avgPrice: asset.avgPrice,
+          subType: asset.subType,
+          startDate: asset.startDate,
+          maturityDate: asset.maturityDate,
+          fixedRate: asset.fixedRate,
+        })
+        currentValue = currentPrice * asset.quantity
+        investedValue = asset.avgPrice * asset.quantity
+      }
+
       const grossGain = currentValue - investedValue
       const returnPct = investedValue > 0 ? (grossGain / investedValue) * 100 : 0
 
-      // IR estimado para Tesouro/CDB (LCI/LCA são isentos mas não distinguimos ainda)
+      // IR estimado para Tesouro/CDB usando startDate do asset como referência
       let irRate: number | null = null
       let netReturnPct: number | null = null
       if (asset.type === 'fixed' && asset.startDate && grossGain > 0) {
@@ -47,6 +97,8 @@ export async function GET() {
         const netGain = grossGain * (1 - irRate / 100)
         netReturnPct = investedValue > 0 ? (netGain / investedValue) * 100 : 0
       }
+
+      const currentPrice = asset.type === 'fixed' ? currentValue : currentValue / asset.quantity
 
       return { ...asset, currentPrice, currentValue, investedValue, returnPct, irRate, netReturnPct }
     })

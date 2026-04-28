@@ -31,7 +31,13 @@ export async function POST(req: NextRequest) {
   const upperTicker = ticker.toUpperCase()
 
   const transaction = await prisma.transaction.create({
-    data: { ticker: upperTicker, type, operation, quantity: qty, price: prc, userId: user.id },
+    data: {
+      ticker: upperTicker, type, operation, quantity: qty, price: prc, userId: user.id,
+      ...(subType && { subType }),
+      ...(startDate && { startDate: new Date(startDate) }),
+      ...(maturityDate && { maturityDate: new Date(maturityDate) }),
+      ...(fixedRate && { fixedRate: Number(fixedRate) }),
+    },
   })
 
   const existingAsset = await prisma.asset.findFirst({
@@ -48,7 +54,8 @@ export async function POST(req: NextRequest) {
           quantity: totalQty,
           avgPrice: newAvgPrice,
           ...(subType && { subType }),
-          ...(startDate && { startDate: new Date(startDate) }),
+          // Preserva a startDate original (primeira compra) — cálculo usa datas por lote nas transactions
+          ...(!existingAsset.startDate && startDate && { startDate: new Date(startDate) }),
           ...(maturityDate && { maturityDate: new Date(maturityDate) }),
           ...(fixedRate && { fixedRate: Number(fixedRate) }),
         },

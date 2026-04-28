@@ -14,16 +14,20 @@ model User {
 }
 
 model Transaction {
-  id        String   @id @default(cuid())
-  ticker    String
-  type      String   // "stock_br" | "crypto" | "stock_us" | "fixed"
-  operation String   // "BUY" | "SELL"
-  quantity  Float
-  price     Float
-  date      DateTime @default(now())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
+  id           String    @id @default(cuid())
+  ticker       String
+  type         String    // "stock_br" | "crypto" | "stock_us" | "fixed"
+  operation    String    // "BUY" | "SELL"
+  quantity     Float
+  price        Float
+  date         DateTime  @default(now())
+  subType      String?   // renda fixa: "tesouro" | "cdb"
+  startDate    DateTime? // renda fixa: data da aplicação
+  maturityDate DateTime? // renda fixa: data de vencimento
+  fixedRate    Float?    // tesouro: taxa ao ano %; cdb: % do CDI (ex: 102)
+  userId       String
+  user         User      @relation(fields: [userId], references: [id])
+  createdAt    DateTime  @default(now())
 }
 
 model Asset {
