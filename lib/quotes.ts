@@ -112,10 +112,15 @@ export async function getQuote(ticker: string, type: string, opts?: AssetOpts): 
     }
 
     if (type === 'fixed') {
-      const { avgPrice, fixedRate } = opts ?? {}
+      const { avgPrice, fixedRate, startDate } = opts ?? {}
       if (!avgPrice) return 0
-      // fixedRate = rentabilidade acumulada % informada manualmente pelo usuário
       if (!fixedRate) return avgPrice
+      // Tesouro Direto: tem data de aplicação → juros compostos automáticos
+      if (startDate) {
+        const years = (Date.now() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24 * 365)
+        return avgPrice * Math.pow(1 + fixedRate / 100, years)
+      }
+      // CDB / LCI / LCA: rentabilidade acumulada informada manualmente
       return avgPrice * (1 + fixedRate / 100)
     }
   } catch {

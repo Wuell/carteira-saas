@@ -15,6 +15,7 @@ type Asset = {
 }
 
 type Category = 'stock' | 'crypto' | 'fixed'
+type FixedSub = 'cdb' | 'tesouro'
 
 const CATEGORIES = [
   {
@@ -56,6 +57,7 @@ async function fetchAssets(): Promise<Asset[]> {
 export function AssetManager() {
   const queryClient = useQueryClient()
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
+  const [fixedSub, setFixedSub] = useState<FixedSub | null>(null)
   const [form, setForm] = useState({
     ticker: '',
     type: '',
@@ -72,16 +74,28 @@ export function AssetManager() {
 
   function selectCategory(cat: Category) {
     setSelectedCategory(cat)
+    setFixedSub(null)
     const apiType = CATEGORIES.find(c => c.id === cat)!.apiType
     setForm({ ticker: '', type: apiType, operation: 'BUY', quantity: '', price: '', startDate: '', fixedRate: '' })
     setError('')
     setTickerError('')
   }
 
-  function goBack() {
-    setSelectedCategory(null)
+  function selectFixedSub(sub: FixedSub) {
+    setFixedSub(sub)
+    setForm(f => ({ ...f, ticker: '', price: '', startDate: '', fixedRate: '' }))
     setError('')
-    setTickerError('')
+  }
+
+  function goBack() {
+    if (fixedSub) {
+      setFixedSub(null)
+      setError('')
+    } else {
+      setSelectedCategory(null)
+      setError('')
+      setTickerError('')
+    }
   }
 
   useEffect(() => {
@@ -153,7 +167,7 @@ export function AssetManager() {
     },
   })
 
-  function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const isFixed = selectedCategory === 'fixed'
     if (!form.ticker || !form.price || !form.type) {
@@ -162,6 +176,10 @@ export function AssetManager() {
     }
     if (!isFixed && !form.quantity) {
       setError('Informe a quantidade.')
+      return
+    }
+    if (fixedSub === 'tesouro' && (!form.fixedRate || !form.startDate)) {
+      setError('Informe a taxa ao ano e a data da aplicação.')
       return
     }
     addMutation.mutate({ ...form, quantity: isFixed ? '1' : form.quantity })
@@ -197,6 +215,30 @@ export function AssetManager() {
                 <span className="text-xs text-zinc-400">{cat.description}</span>
               </button>
             ))}
+          </div>
+        ) : selectedCategory === 'fixed' && !fixedSub ? (
+          <div className="flex flex-col gap-3">
+            <p className="text-xs text-zinc-500">Selecione o tipo de investimento:</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => selectFixedSub('cdb')}
+                className="flex flex-col items-start gap-1.5 rounded-xl border-2 border-zinc-100 bg-zinc-50 p-4 text-left transition-all hover:border-zinc-300 hover:bg-white hover:shadow-sm"
+              >
+                <span className="text-2xl">🏦</span>
+                <span className="text-sm font-semibold text-zinc-900">CDB / LCI / LCA</span>
+                <span className="text-xs text-zinc-400">Liquidez diária — informe a rentabilidade acumulada do app</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => selectFixedSub('tesouro')}
+                className="flex flex-col items-start gap-1.5 rounded-xl border-2 border-zinc-100 bg-zinc-50 p-4 text-left transition-all hover:border-zinc-300 hover:bg-white hover:shadow-sm"
+              >
+                <span className="text-2xl">🇧🇷</span>
+                <span className="text-sm font-semibold text-zinc-900">Tesouro Direto</span>
+                <span className="text-xs text-zinc-400">Prefixado — informe a taxa ao ano e a data da compra</span>
+              </button>
+            </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -285,7 +327,7 @@ export function AssetManager() {
               </div>
             </div>
 
-            {selectedCategory === 'fixed' && (
+            {fixedSub === 'cdb' && (
               <div className="flex flex-col gap-3 p-4 rounded-lg bg-zinc-50 border border-zinc-200">
                 <div className="flex flex-col gap-1">
                   <label className="text-xs text-zinc-500">Rentabilidade acumulada (%)</label>
@@ -299,7 +341,35 @@ export function AssetManager() {
                   />
                 </div>
                 <p className="text-xs text-zinc-400">
-                  Informe a rentabilidade que aparece no seu app (ex: Inter, Rico). Atualize quando quiser ver o valor corrigido.
+                  Informe a rentabilidade que aparece no app (ex: Inter, Rico). Atualize quando quiser ver o valor corrigido.
+                </p>
+              </div>
+            )}
+
+            {fixedSub === 'tesouro' && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-lg bg-zinc-50 border border-zinc-200">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-zinc-500">Taxa ao ano (%)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    className="rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                    placeholder="ex: 13.5"
+                    value={form.fixedRate}
+                    onChange={e => setForm(f => ({ ...f, fixedRate: e.target.value }))}
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-zinc-500">Data da aplicação</label>
+                  <input
+                    type="date"
+                    className="rounded-lg border px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                    value={form.startDate}
+                    onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))}
+                  />
+                </div>
+                <p className="sm:col-span-2 text-xs text-zinc-400">
+                  Informe a taxa contratada na compra (encontrada na nota de negociação). O rendimento é calculado automaticamente.
                 </p>
               </div>
             )}
@@ -332,7 +402,7 @@ export function AssetManager() {
               <th className="px-4 py-3">Tipo</th>
               <th className="px-4 py-3">Quantidade</th>
               <th className="px-4 py-3">Preço médio</th>
-              <th className="px-4 py-3">Taxa a.a.</th>
+              <th className="px-4 py-3">Rentabilidade</th>
               <th className="px-4 py-3"></th>
             </tr>
           </thead>
@@ -352,7 +422,7 @@ export function AssetManager() {
                   {asset.avgPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                 </td>
                 <td className="px-4 py-3 text-zinc-500 text-xs">
-                  {asset.fixedRate ? `${asset.fixedRate}% a.a.` : '—'}
+                  {asset.fixedRate ? `${asset.fixedRate}%` : '—'}
                 </td>
                 <td className="px-4 py-3">
                   <button
