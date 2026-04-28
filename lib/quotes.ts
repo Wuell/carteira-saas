@@ -84,7 +84,24 @@ export async function detectTickerType(ticker: string): Promise<{ type: string; 
 type AssetOpts = {
   avgPrice?: number
   startDate?: Date | null
+  maturityDate?: Date | null
   fixedRate?: number | null
+}
+
+// Conta dias úteis (seg-sex) entre duas datas, sem considerar feriados.
+// Diferença em relação ao calendário real: ~10-12 feriados/ano (~0.5% no expoente).
+function countWeekdays(start: Date, end: Date): number {
+  const msPerDay = 86400000
+  const totalDays = Math.max(0, Math.floor((end.getTime() - start.getTime()) / msPerDay))
+  const fullWeeks = Math.floor(totalDays / 7)
+  const remainder = totalDays % 7
+  const startDay = start.getDay()
+  let extra = 0
+  for (let i = 0; i < remainder; i++) {
+    const d = (startDay + i) % 7
+    if (d !== 0 && d !== 6) extra++
+  }
+  return fullWeeks * 5 + extra
 }
 
 export async function getQuote(ticker: string, type: string, opts?: AssetOpts): Promise<number> {
@@ -112,14 +129,21 @@ export async function getQuote(ticker: string, type: string, opts?: AssetOpts): 
     }
 
     if (type === 'fixed') {
-      const { avgPrice, fixedRate, startDate } = opts ?? {}
+      const { avgPrice, fixedRate, startDate, maturityDate } = opts ?? {}
       if (!avgPrice) return 0
       if (!fixedRate) return avgPrice
-      // Tesouro Direto: tem data de aplicação → juros compostos automáticos
+
       if (startDate) {
-        const years = (Date.now() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24 * 365)
-        return avgPrice * Math.pow(1 + fixedRate / 100, years)
+        // Usa a data de vencimento como teto: após vencer, o valor não cresce mais
+        const now = new Date()
+        const maturity = maturityDate ? new Date(maturityDate) : null
+        const effectiveEnd = maturity && maturity < now ? maturity : now
+
+        // Dias úteis / 252 — convenção do mercado brasileiro para renda fixa
+        const weekdays = countWeekdays(new Date(startDate), effectiveEnd)
+        return avgPrice * Math.pow(1 + fixedRate / 100, weekdays / 252)
       }
+
       // CDB / LCI / LCA: rentabilidade acumulada informada manualmente
       return avgPrice * (1 + fixedRate / 100)
     }

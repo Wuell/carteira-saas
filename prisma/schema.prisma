@@ -32,8 +32,9 @@ model Asset {
   type      String    // "stock_br" | "crypto" | "stock_us" | "fixed"
   quantity  Float
   avgPrice  Float
-  startDate DateTime? // renda fixa: data da aplicação
-  fixedRate Float?    // renda fixa prefixada: taxa ao ano em %
+  startDate    DateTime? // renda fixa: data da aplicação
+  maturityDate DateTime? // renda fixa: data de vencimento
+  fixedRate    Float?    // renda fixa prefixada: taxa ao ano em %
   userId    String
   user      User      @relation(fields: [userId], references: [id])
   createdAt DateTime  @default(now())

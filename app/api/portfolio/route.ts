@@ -5,6 +5,15 @@ import { getQuote } from '@/lib/quotes'
 import { getOrCreateUser } from '@/lib/user'
 import type { Asset } from '@prisma/client'
 
+// Alíquota IR regressivo para renda fixa (exceto LCI/LCA que são isentos)
+function getIrRate(startDate: Date): number {
+  const days = Math.floor((Date.now() - startDate.getTime()) / 86400000)
+  if (days <= 180) return 22.5
+  if (days <= 360) return 20
+  if (days <= 720) return 17.5
+  return 15
+}
+
 export async function GET() {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
@@ -21,12 +30,24 @@ export async function GET() {
       const currentPrice = await getQuote(asset.ticker, asset.type, {
         avgPrice: asset.avgPrice,
         startDate: asset.startDate,
+        maturityDate: asset.maturityDate,
         fixedRate: asset.fixedRate,
       })
       const currentValue = currentPrice * asset.quantity
       const investedValue = asset.avgPrice * asset.quantity
-      const returnPct = investedValue > 0 ? ((currentValue - investedValue) / investedValue) * 100 : 0
-      return { ...asset, currentPrice, currentValue, investedValue, returnPct }
+      const grossGain = currentValue - investedValue
+      const returnPct = investedValue > 0 ? (grossGain / investedValue) * 100 : 0
+
+      // IR estimado para Tesouro/CDB (LCI/LCA são isentos mas não distinguimos ainda)
+      let irRate: number | null = null
+      let netReturnPct: number | null = null
+      if (asset.type === 'fixed' && asset.startDate && grossGain > 0) {
+        irRate = getIrRate(asset.startDate)
+        const netGain = grossGain * (1 - irRate / 100)
+        netReturnPct = investedValue > 0 ? (netGain / investedValue) * 100 : 0
+      }
+
+      return { ...asset, currentPrice, currentValue, investedValue, returnPct, irRate, netReturnPct }
     })
   )
 

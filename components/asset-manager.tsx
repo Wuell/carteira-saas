@@ -13,7 +13,10 @@ type AssetRow = {
   currentValue: number
   investedValue: number
   returnPct: number
+  irRate?: number | null
+  netReturnPct?: number | null
   startDate?: string | null
+  maturityDate?: string | null
   fixedRate?: number | null
 }
 
@@ -43,7 +46,7 @@ async function fetchPortfolio(): Promise<Portfolio> {
 }
 
 // ---------- Edit Modal ----------
-type EditForm = { quantity: string; avgPrice: string; fixedRate: string; startDate: string }
+type EditForm = { quantity: string; avgPrice: string; fixedRate: string; startDate: string; maturityDate: string }
 
 function EditModal({ asset, onClose, onSave, saving }: {
   asset: AssetRow
@@ -55,10 +58,11 @@ function EditModal({ asset, onClose, onSave, saving }: {
   const isTesouro = isFixed && !!asset.startDate
 
   const [form, setForm] = useState<EditForm>({
-    quantity: String(asset.quantity),
+    quantity: !isFixed ? String(asset.quantity) : '',
     avgPrice: String(asset.avgPrice),
     fixedRate: asset.fixedRate != null ? String(asset.fixedRate) : '',
     startDate: asset.startDate ? asset.startDate.slice(0, 10) : '',
+    maturityDate: asset.maturityDate ? asset.maturityDate.slice(0, 10) : '',
   })
 
   return (
@@ -74,12 +78,10 @@ function EditModal({ asset, onClose, onSave, saving }: {
         </div>
 
         <div className="flex flex-col gap-3">
-          {/* Quantidade — todos os tipos */}
-          {(!isFixed || isTesouro) && (
+          {/* Quantidade — só para ações e cripto */}
+          {!isFixed && (
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-zinc-500">
-                {isTesouro ? 'Quantidade de títulos' : 'Quantidade'}
-              </label>
+              <label className="text-xs text-zinc-500">Quantidade</label>
               <input
                 type="number"
                 step="any"
@@ -93,7 +95,7 @@ function EditModal({ asset, onClose, onSave, saving }: {
           {/* Preço / Valor investido */}
           <div className="flex flex-col gap-1">
             <label className="text-xs text-zinc-500">
-              {isTesouro ? 'Preço por título (R$)' : isFixed ? 'Valor investido (R$)' : 'Preço médio (R$)'}
+              {isFixed ? 'Valor total investido (R$)' : 'Preço médio (R$)'}
             </label>
             <input
               type="number"
@@ -102,6 +104,7 @@ function EditModal({ asset, onClose, onSave, saving }: {
               value={form.avgPrice}
               onChange={e => setForm(f => ({ ...f, avgPrice: e.target.value }))}
             />
+            {isFixed && <p className="text-xs text-zinc-400">Ex: R$ 236,32 — o total que você pagou.</p>}
           </div>
 
           {/* CDB: rentabilidade */}
@@ -129,7 +132,7 @@ function EditModal({ asset, onClose, onSave, saving }: {
                   type="number"
                   step="0.01"
                   className="rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
-                  placeholder="ex: 13.5"
+                  placeholder="ex: 13.97"
                   value={form.fixedRate}
                   onChange={e => setForm(f => ({ ...f, fixedRate: e.target.value }))}
                 />
@@ -143,6 +146,18 @@ function EditModal({ asset, onClose, onSave, saving }: {
                   onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))}
                 />
               </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-zinc-500">Data de vencimento (opcional)</label>
+                <input
+                  type="date"
+                  className="rounded-lg border px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                  value={form.maturityDate}
+                  onChange={e => setForm(f => ({ ...f, maturityDate: e.target.value }))}
+                />
+              </div>
+              <p className="text-xs text-zinc-400">
+                O valor atual é calculado automaticamente. Com vencimento informado, o rendimento é travado na data de expiração.
+              </p>
             </>
           )}
         </div>
@@ -171,7 +186,7 @@ export function AssetManager() {
   // Form state
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
   const [fixedSub, setFixedSub] = useState<FixedSub | null>(null)
-  const [form, setForm] = useState({ ticker: '', type: '', operation: 'BUY', quantity: '', price: '', startDate: '', fixedRate: '' })
+  const [form, setForm] = useState({ ticker: '', type: '', operation: 'BUY', quantity: '', price: '', startDate: '', maturityDate: '', fixedRate: '' })
   const [error, setError] = useState('')
   const [tickerError, setTickerError] = useState('')
   const [fetchingPrice, setFetchingPrice] = useState(false)
@@ -185,14 +200,14 @@ export function AssetManager() {
     setSelectedCategory(cat)
     setFixedSub(null)
     const apiType = CATEGORIES.find(c => c.id === cat)!.apiType
-    setForm({ ticker: '', type: apiType, operation: 'BUY', quantity: '', price: '', startDate: '', fixedRate: '' })
+    setForm({ ticker: '', type: apiType, operation: 'BUY', quantity: '', price: '', startDate: '', maturityDate: '', fixedRate: '' })
     setError('')
     setTickerError('')
   }
 
   function selectFixedSub(sub: FixedSub) {
     setFixedSub(sub)
-    setForm(f => ({ ...f, ticker: '', price: '', startDate: '', fixedRate: '' }))
+    setForm(f => ({ ...f, ticker: '', price: '', startDate: '', maturityDate: '', fixedRate: '' }))
     setError('')
   }
 
@@ -248,7 +263,7 @@ export function AssetManager() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['portfolio'] })
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
-      setForm(f => ({ ...f, ticker: '', quantity: '', price: '', startDate: '', fixedRate: '' }))
+      setForm(f => ({ ...f, ticker: '', quantity: '', price: '', startDate: '', maturityDate: '', fixedRate: '' }))
       setError('')
       setTickerError('')
     },
@@ -379,25 +394,23 @@ export function AssetManager() {
                   )}
                 </div>
 
-                {(selectedCategory !== 'fixed' || fixedSub === 'tesouro') && (
+                {selectedCategory !== 'fixed' && (
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs text-zinc-500">
-                      {fixedSub === 'tesouro' ? 'Quantidade de títulos' : 'Quantidade'}
-                    </label>
+                    <label className="text-xs text-zinc-500">Quantidade</label>
                     <input type="number" step="any"
                       className="rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
-                      placeholder="ex: 0.5" value={form.quantity}
+                      placeholder="ex: 10" value={form.quantity}
                       onChange={e => setForm(f => ({ ...f, quantity: e.target.value }))} />
                   </div>
                 )}
 
                 <div className="flex flex-col gap-1">
                   <label className="text-xs text-zinc-500">
-                    {fixedSub === 'tesouro' ? 'Preço por título (R$)' : selectedCategory === 'fixed' ? 'Valor investido (R$)' : 'Preço unitário (R$)'}
+                    {selectedCategory === 'fixed' ? 'Valor total investido (R$)' : 'Preço unitário (R$)'}
                   </label>
                   <input type="number" step="0.01"
                     className="rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
-                    placeholder={fetchingPrice ? 'Buscando...' : selectedCategory === 'fixed' ? 'ex: 5000.00' : 'ex: 32.50'}
+                    placeholder={fetchingPrice ? 'Buscando...' : selectedCategory === 'fixed' ? 'ex: 236.32' : 'ex: 32.50'}
                     value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} />
                 </div>
               </div>
@@ -430,7 +443,13 @@ export function AssetManager() {
                       className="rounded-lg border px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300"
                       value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} />
                   </div>
-                  <p className="sm:col-span-2 text-xs text-zinc-400">Informe a taxa contratada na compra. O rendimento é calculado automaticamente.</p>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-zinc-500">Data de vencimento (opcional)</label>
+                    <input type="date"
+                      className="rounded-lg border px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                      value={form.maturityDate} onChange={e => setForm(f => ({ ...f, maturityDate: e.target.value }))} />
+                  </div>
+                  <p className="sm:col-span-2 text-xs text-zinc-400">Taxa contratada na compra. O rendimento é calculado automaticamente e travado no vencimento.</p>
                 </div>
               )}
 
@@ -480,7 +499,14 @@ export function AssetManager() {
                       <td className="px-4 py-3 text-zinc-700">{isFixed ? '—' : formatBRL(asset.currentPrice)}</td>
                       <td className="px-4 py-3 text-zinc-700">{formatBRL(asset.currentValue)}</td>
                       <td className={`px-4 py-3 font-medium ${positive ? 'text-green-600' : 'text-red-500'}`}>
-                        {positive ? '+' : ''}{asset.returnPct.toFixed(2)}%
+                        <div className="flex flex-col gap-0.5">
+                          <span>{positive ? '+' : ''}{asset.returnPct.toFixed(2)}% bruto</span>
+                          {asset.netReturnPct != null && (
+                            <span className="text-xs font-normal text-zinc-400">
+                              {asset.netReturnPct >= 0 ? '+' : ''}{asset.netReturnPct.toFixed(2)}% líq. (IR {asset.irRate}%)
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex gap-3">
