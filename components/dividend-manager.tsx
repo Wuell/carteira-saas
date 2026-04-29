@@ -25,12 +25,17 @@ function formatBRL(v: number) {
   return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 
+function parseLocalDate(d: string): Date {
+  const [year, month, day] = d.split('T')[0].split('-').map(Number)
+  return new Date(year, month - 1, day)
+}
+
 function formatDate(d: string) {
-  return new Date(d).toLocaleDateString('pt-BR')
+  return parseLocalDate(d).toLocaleDateString('pt-BR')
 }
 
 function toMonthKey(d: string) {
-  const date = new Date(d)
+  const date = parseLocalDate(d)
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
 }
 
@@ -223,7 +228,7 @@ export function DividendManager() {
 
   const byMonth = base.reduce<Record<string, { total: number; year: number; month: number }>>((acc, d) => {
     const key = toMonthKey(d.paidAt)
-    const date = new Date(d.paidAt)
+    const date = parseLocalDate(d.paidAt)
     if (!acc[key]) acc[key] = { total: 0, year: date.getFullYear(), month: date.getMonth() + 1 }
     acc[key].total += d.amount
     return acc
