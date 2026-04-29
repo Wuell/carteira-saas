@@ -20,17 +20,9 @@ export async function POST(req: NextRequest) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
-  const body = await req.json()
-  const { name, subType, investedValue, annualRate, startDate, maturityDate, accumulatedReturn } = body
-
+  const { name, subType, investedValue, currentValue } = await req.json()
   if (!name || !subType || !investedValue) {
     return NextResponse.json({ error: 'Campos obrigatórios ausentes' }, { status: 400 })
-  }
-  if (subType === 'tesouro' && (!annualRate || !startDate)) {
-    return NextResponse.json({ error: 'Taxa ao ano e data de aplicação são obrigatórios para Tesouro Direto' }, { status: 400 })
-  }
-  if (subType === 'cdb' && accumulatedReturn == null) {
-    return NextResponse.json({ error: 'Rentabilidade acumulada é obrigatória para CDB/LCI/LCA' }, { status: 400 })
   }
 
   const user = await getOrCreateUser(userId)
@@ -39,10 +31,7 @@ export async function POST(req: NextRequest) {
       name,
       subType,
       investedValue: Number(investedValue),
-      annualRate: annualRate != null ? Number(annualRate) : null,
-      startDate: startDate ? new Date(startDate) : null,
-      maturityDate: maturityDate ? new Date(maturityDate) : null,
-      accumulatedReturn: accumulatedReturn != null ? Number(accumulatedReturn) : null,
+      currentValue: currentValue != null && currentValue !== '' ? Number(currentValue) : null,
       userId: user.id,
     },
   })
@@ -54,8 +43,7 @@ export async function PATCH(req: NextRequest) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
-  const body = await req.json()
-  const { id, name, investedValue, annualRate, startDate, maturityDate, accumulatedReturn } = body
+  const { id, name, investedValue, currentValue } = await req.json()
 
   const user = await getOrCreateUser(userId)
   const lot = await prisma.fixedIncomeLot.findUnique({ where: { id } })
@@ -69,10 +57,9 @@ export async function PATCH(req: NextRequest) {
     data: {
       ...(name !== undefined && { name }),
       ...(investedValue !== undefined && { investedValue: Number(investedValue) }),
-      ...(annualRate !== undefined && { annualRate: annualRate !== '' ? Number(annualRate) : null }),
-      ...(startDate !== undefined && { startDate: startDate ? new Date(startDate) : null }),
-      ...(maturityDate !== undefined && { maturityDate: maturityDate ? new Date(maturityDate) : null }),
-      ...(accumulatedReturn !== undefined && { accumulatedReturn: accumulatedReturn !== '' ? Number(accumulatedReturn) : null }),
+      ...(currentValue !== undefined && {
+        currentValue: currentValue !== '' ? Number(currentValue) : null,
+      }),
     },
   })
 

@@ -1,5 +1,3 @@
-import type { FixedIncomeLot } from '@prisma/client'
-
 const CRYPTO_SYMBOL_MAP: Record<string, string> = {
   BTC: 'bitcoin',
   ETH: 'ethereum',
@@ -73,7 +71,6 @@ export async function detectTickerType(ticker: string): Promise<{ type: string; 
       const data = await stockRes.json()
       const result = data.results?.[0]
       if (result?.regularMarketPrice) {
-        // FIIs terminam em 11 na B3
         const isFii = ticker.toUpperCase().endsWith('11')
         return { type: isFii ? 'fii' : 'stock_br', price: result.regularMarketPrice }
       }
@@ -83,65 +80,43 @@ export async function detectTickerType(ticker: string): Promise<{ type: string; 
   return null
 }
 
-export async function getQuote(ticker: string, type: string): Promise<number> {
+export async function getBatchStockQuotes(tickers: string[]): Promise<Record<string, number>> {
+  if (tickers.length === 0) return {}
   try {
-    if (type === 'crypto') {
-      const geckoId = await resolveToGeckoId(ticker)
-      if (!geckoId) return 0
-      const res = await fetch(
-        `https://api.coingecko.com/api/v3/simple/price?ids=${geckoId}&vs_currencies=brl`,
-        { next: { revalidate: 30 } }
-      )
-      if (!res.ok) return 0
-      const data = await res.json()
-      return data[geckoId]?.brl ?? 0
+    const token = process.env.BRAPI_TOKEN
+    const url = `https://brapi.dev/api/quote/${tickers.join(',')}${token ? `?token=${token}` : ''}`
+    const res = await fetch(url)
+    if (!res.ok) return {}
+    const data = await res.json()
+    const result: Record<string, number> = {}
+    for (const r of (data.results ?? [])) {
+      if (r.symbol && r.regularMarketPrice) {
+        result[r.symbol.toUpperCase()] = r.regularMarketPrice
+      }
     }
-
-    if (type === 'stock_br' || type === 'fii') {
-      const token = process.env.BRAPI_TOKEN
-      const url = `https://brapi.dev/api/quote/${ticker.toUpperCase()}${token ? `?token=${token}` : ''}`
-      const res = await fetch(url, { next: { revalidate: 30 } })
-      if (!res.ok) return 0
-      const data = await res.json()
-      if (data.error) return 0
-      return data.results?.[0]?.regularMarketPrice ?? 0
-    }
-  } catch {}
-
-  return 0
+    return result
+  } catch {
+    return {}
+  }
 }
 
-// Conta dias úteis (seg-sex) entre duas datas, sem considerar feriados.
-function countWeekdays(start: Date, end: Date): number {
-  const msPerDay = 86400000
-  const totalDays = Math.max(0, Math.floor((end.getTime() - start.getTime()) / msPerDay))
-  const fullWeeks = Math.floor(totalDays / 7)
-  const remainder = totalDays % 7
-  const startDay = start.getDay()
-  let extra = 0
-  for (let i = 0; i < remainder; i++) {
-    const d = (startDay + i) % 7
-    if (d !== 0 && d !== 6) extra++
+export async function getBatchCryptoQuotes(tickers: string[]): Promise<Record<string, number>> {
+  if (tickers.length === 0) return {}
+  try {
+    const geckoIds = tickers
+      .map(t => ({ ticker: t.toUpperCase(), id: CRYPTO_SYMBOL_MAP[t.toUpperCase()] }))
+      .filter(x => x.id)
+    if (geckoIds.length === 0) return {}
+    const ids = geckoIds.map(x => x.id).join(',')
+    const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=brl`)
+    if (!res.ok) return {}
+    const data = await res.json()
+    const result: Record<string, number> = {}
+    for (const { ticker, id } of geckoIds) {
+      if (data[id]?.brl) result[ticker] = data[id].brl
+    }
+    return result
+  } catch {
+    return {}
   }
-  return fullWeeks * 5 + extra
-}
-
-export function getFixedLotCurrentValue(lot: FixedIncomeLot): number {
-  if (lot.subType === 'tesouro') {
-    if (!lot.annualRate || !lot.startDate) return lot.investedValue
-    const now = new Date()
-    const maturity = lot.maturityDate ? new Date(lot.maturityDate) : null
-    // Trava o rendimento na data de vencimento se já passou
-    const effectiveEnd = maturity && maturity < now ? maturity : now
-    const weekdays = countWeekdays(new Date(lot.startDate), effectiveEnd)
-    return lot.investedValue * Math.pow(1 + lot.annualRate / 100, weekdays / 252)
-  }
-
-  if (lot.subType === 'cdb') {
-    // Usuário informa a rentabilidade acumulada atual lida no app do banco
-    if (lot.accumulatedReturn == null) return lot.investedValue
-    return lot.investedValue * (1 + lot.accumulatedReturn / 100)
-  }
-
-  return lot.investedValue
 }

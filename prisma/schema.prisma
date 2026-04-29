@@ -29,14 +29,16 @@ model Transaction {
 }
 
 model Asset {
-  id        String   @id @default(cuid())
-  ticker    String
-  type      String   // "stock_br" | "crypto" | "stock_us"
-  quantity  Float
-  avgPrice  Float
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
+  id            String    @id @default(cuid())
+  ticker        String
+  type          String    // "stock_br" | "fii" | "crypto" | "stock_us"
+  quantity      Float
+  avgPrice      Float
+  cachedPrice   Float?
+  cachedPriceAt DateTime?
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  createdAt     DateTime  @default(now())
 }
 
 model Dividend {
@@ -51,18 +53,13 @@ model Dividend {
 }
 
 model FixedIncomeLot {
-  id                String    @id @default(cuid())
-  userId            String
-  user              User      @relation(fields: [userId], references: [id])
-  name              String
-  subType           String    // "tesouro" | "cdb"
-  investedValue     Float
-  // Tesouro: taxa ao ano (ex: 13.97 para 13,97% a.a.)
-  annualRate        Float?
-  startDate         DateTime?
-  maturityDate      DateTime?
-  // CDB/LCI/LCA: rentabilidade acumulada % informada pelo usuário
-  accumulatedReturn Float?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  name          String
+  subType       String   // "tesouro" | "cdb"
+  investedValue Float
+  currentValue  Float?   // atualizado manualmente pelo usuário via app do banco
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
