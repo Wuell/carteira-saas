@@ -160,6 +160,7 @@ export function DividendManager() {
   const [form, setForm] = useState({ ticker: '', type: '', amount: '', paidAt: '' })
   const [error, setError] = useState('')
   const [filters, setFilters] = useState<Filters>({ month: '', ticker: '' })
+  const [selectedDividendId, setSelectedDividendId] = useState<string | null>(null)
 
   const { data: dividends = [], isLoading } = useQuery({
     queryKey: ['dividends'],
@@ -361,13 +362,20 @@ export function DividendManager() {
                 </span>
               )}
             </div>
-            <FilterPanel
-              filters={filters}
-              onChange={setFilters}
-              monthOptions={monthOptions}
-              tickerOptions={tickerOptions}
-              onClear={() => setFilters({ month: '', ticker: '' })}
-            />
+            <div className="flex items-center gap-2">
+              <button
+                disabled={!selectedDividendId || deleteMutation.isPending}
+                onClick={() => { if (selectedDividendId) { deleteMutation.mutate(selectedDividendId); setSelectedDividendId(null) } }}
+                className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >Remover</button>
+              <FilterPanel
+                filters={filters}
+                onChange={setFilters}
+                monthOptions={monthOptions}
+                tickerOptions={tickerOptions}
+                onClear={() => setFilters({ month: '', ticker: '' })}
+              />
+            </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -377,34 +385,34 @@ export function DividendManager() {
                   <th className="px-4 py-3">Tipo</th>
                   <th className="px-4 py-3">Data</th>
                   <th className="px-4 py-3">Valor</th>
-                  <th className="px-4 py-3"></th>
                 </tr>
               </thead>
               <tbody>
                 {isLoading && (
-                  <tr><td colSpan={5} className="px-4 py-6 text-center text-zinc-500">Carregando...</td></tr>
+                  <tr><td colSpan={4} className="px-4 py-6 text-center text-zinc-500">Carregando...</td></tr>
                 )}
                 {!isLoading && filtered.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-6 text-center text-zinc-500">
+                    <td colSpan={4} className="px-4 py-6 text-center text-zinc-500">
                       {hasFilter ? 'Nenhum resultado para os filtros selecionados.' : 'Nenhum provento registrado.'}
                     </td>
                   </tr>
                 )}
-                {filtered.map(d => (
-                  <tr key={d.id} className="border-b last:border-0 hover:bg-zinc-50 transition-colors">
-                    <td className="px-4 py-3 font-medium text-zinc-900">{d.ticker}</td>
-                    <td className="px-4 py-3 text-zinc-500">{TYPE_LABELS[d.type] ?? d.type}</td>
-                    <td className="px-4 py-3 text-zinc-500">{formatDate(d.paidAt)}</td>
-                    <td className="px-4 py-3 font-medium text-green-600">{formatBRL(d.amount)}</td>
-                    <td className="px-4 py-3">
-                      <button onClick={() => deleteMutation.mutate(d.id)} disabled={deleteMutation.isPending}
-                        className="text-xs text-red-500 hover:text-red-700 disabled:opacity-50">
-                        Remover
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {filtered.map(d => {
+                  const selected = selectedDividendId === d.id
+                  return (
+                    <tr
+                      key={d.id}
+                      onClick={() => setSelectedDividendId(id => id === d.id ? null : d.id)}
+                      className={`border-b last:border-0 cursor-pointer transition-colors ${selected ? 'bg-blue-50' : 'hover:bg-zinc-50'}`}
+                    >
+                      <td className="px-4 py-3 font-medium text-zinc-900">{d.ticker}</td>
+                      <td className="px-4 py-3 text-zinc-500">{TYPE_LABELS[d.type] ?? d.type}</td>
+                      <td className="px-4 py-3 text-zinc-500">{formatDate(d.paidAt)}</td>
+                      <td className="px-4 py-3 font-medium text-green-600">{formatBRL(d.amount)}</td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>

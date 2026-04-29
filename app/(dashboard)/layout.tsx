@@ -11,9 +11,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <Link href="/ativos" className="rounded-lg px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-100 transition-colors">
           Ativos
         </Link>
-        <Link href="/transacoes" className="rounded-lg px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-100 transition-colors">
-          Transações
-        </Link>
         <Link href="/proventos" className="rounded-lg px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-100 transition-colors">
           Proventos
         </Link>

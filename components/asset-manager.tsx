@@ -186,6 +186,8 @@ export function AssetManager() {
   const [sort, setSort] = useState<{ key: SortKey; dir: 'asc' | 'desc' }>({ key: 'currentValue', dir: 'desc' })
   const [editAsset, setEditAsset] = useState<AssetRow | null>(null)
   const [editFixed, setEditFixed] = useState<FixedLotRow | null>(null)
+  const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null)
+  const [selectedFixedId, setSelectedFixedId] = useState<string | null>(null)
 
   function selectCategory(cat: Category) {
     setSelectedCategory(cat)
@@ -460,8 +462,20 @@ export function AssetManager() {
         {/* Tabela — Ações e Cripto */}
         {(isLoading || assets.length > 0) && (
           <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b">
+            <div className="px-6 py-4 border-b flex items-center justify-between">
               <p className="text-sm font-semibold text-zinc-900">Ações e Cripto</p>
+              <div className="flex gap-2">
+                <button
+                  disabled={!selectedAssetId}
+                  onClick={() => { const a = assets.find(a => a.id === selectedAssetId); if (a) { setEditAsset(a); setSelectedAssetId(null) } }}
+                  className="rounded-lg border px-3 py-1.5 text-xs font-medium text-zinc-600 hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >Editar</button>
+                <button
+                  disabled={!selectedAssetId || deleteAssetMutation.isPending}
+                  onClick={() => { if (selectedAssetId) { deleteAssetMutation.mutate(selectedAssetId); setSelectedAssetId(null) } }}
+                  className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >Remover</button>
+              </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -474,20 +488,24 @@ export function AssetManager() {
                     <th className="px-4 py-3">Cotação atual</th>
                     <SortHeader label="Valor total" sortKey="currentValue" />
                     <SortHeader label="P&L" sortKey="returnPct" />
-                    <th className="px-4 py-3"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {isLoading && (
-                    <tr><td colSpan={8} className="px-4 py-6 text-center text-zinc-500">Carregando...</td></tr>
+                    <tr><td colSpan={7} className="px-4 py-6 text-center text-zinc-500">Carregando...</td></tr>
                   )}
                   {!isLoading && assets.length === 0 && (
-                    <tr><td colSpan={8} className="px-4 py-6 text-center text-zinc-500">Nenhum ativo cadastrado.</td></tr>
+                    <tr><td colSpan={7} className="px-4 py-6 text-center text-zinc-500">Nenhum ativo cadastrado.</td></tr>
                   )}
                   {assets.map(asset => {
                     const positive = asset.returnPct >= 0
+                    const selected = selectedAssetId === asset.id
                     return (
-                      <tr key={asset.id} className="border-b last:border-0 hover:bg-zinc-50 transition-colors">
+                      <tr
+                        key={asset.id}
+                        onClick={() => setSelectedAssetId(id => id === asset.id ? null : asset.id)}
+                        className={`border-b last:border-0 cursor-pointer transition-colors ${selected ? 'bg-blue-50' : 'hover:bg-zinc-50'}`}
+                      >
                         <td className="px-4 py-3 font-medium text-zinc-900">{asset.ticker}</td>
                         <td className="px-4 py-3 text-zinc-500">{TYPE_LABELS[asset.type] ?? asset.type}</td>
                         <td className="px-4 py-3 text-zinc-700">{asset.quantity}</td>
@@ -496,13 +514,6 @@ export function AssetManager() {
                         <td className="px-4 py-3 text-zinc-700">{formatBRL(asset.currentValue)}</td>
                         <td className={`px-4 py-3 font-medium ${positive ? 'text-green-600' : 'text-red-500'}`}>
                           {positive ? '+' : ''}{asset.returnPct.toFixed(2)}%
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex gap-3">
-                            <button onClick={() => setEditAsset(asset)} className="text-xs text-zinc-500 hover:text-zinc-800">Editar</button>
-                            <button onClick={() => deleteAssetMutation.mutate(asset.id)} disabled={deleteAssetMutation.isPending}
-                              className="text-xs text-red-500 hover:text-red-700 disabled:opacity-50">Remover</button>
-                          </div>
                         </td>
                       </tr>
                     )
@@ -516,8 +527,20 @@ export function AssetManager() {
         {/* Tabela — Renda Fixa */}
         {(isLoading || fixedLots.length > 0) && (
           <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b">
+            <div className="px-6 py-4 border-b flex items-center justify-between">
               <p className="text-sm font-semibold text-zinc-900">Renda Fixa</p>
+              <div className="flex gap-2">
+                <button
+                  disabled={!selectedFixedId}
+                  onClick={() => { const l = fixedLots.find(l => l.id === selectedFixedId); if (l) { setEditFixed(l); setSelectedFixedId(null) } }}
+                  className="rounded-lg border px-3 py-1.5 text-xs font-medium text-zinc-600 hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >Editar</button>
+                <button
+                  disabled={!selectedFixedId || deleteFixedMutation.isPending}
+                  onClick={() => { if (selectedFixedId) { deleteFixedMutation.mutate(selectedFixedId); setSelectedFixedId(null) } }}
+                  className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >Remover</button>
+              </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -528,21 +551,25 @@ export function AssetManager() {
                     <th className="px-4 py-3">Valor investido</th>
                     <th className="px-4 py-3">Valor atual</th>
                     <th className="px-4 py-3">Rentabilidade</th>
-                    <th className="px-4 py-3"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {isLoading && (
-                    <tr><td colSpan={6} className="px-4 py-6 text-center text-zinc-500">Carregando...</td></tr>
+                    <tr><td colSpan={5} className="px-4 py-6 text-center text-zinc-500">Carregando...</td></tr>
                   )}
                   {!isLoading && fixedLots.length === 0 && (
-                    <tr><td colSpan={6} className="px-4 py-6 text-center text-zinc-500">Nenhum investimento cadastrado.</td></tr>
+                    <tr><td colSpan={5} className="px-4 py-6 text-center text-zinc-500">Nenhum investimento cadastrado.</td></tr>
                   )}
                   {fixedLots.map(lot => {
                     const positive = lot.returnPct >= 0
                     const isTesouro = lot.subType === 'tesouro'
+                    const selected = selectedFixedId === lot.id
                     return (
-                      <tr key={lot.id} className="border-b last:border-0 hover:bg-zinc-50 transition-colors">
+                      <tr
+                        key={lot.id}
+                        onClick={() => setSelectedFixedId(id => id === lot.id ? null : lot.id)}
+                        className={`border-b last:border-0 cursor-pointer transition-colors ${selected ? 'bg-blue-50' : 'hover:bg-zinc-50'}`}
+                      >
                         <td className="px-4 py-3 font-medium text-zinc-900">{lot.name}</td>
                         <td className="px-4 py-3 text-zinc-500">{isTesouro ? 'Tesouro Direto' : 'CDB / LCI / LCA'}</td>
                         <td className="px-4 py-3 text-zinc-700">{formatBRL(lot.investedValue)}</td>
@@ -551,13 +578,6 @@ export function AssetManager() {
                           <span className={positive ? 'text-green-600' : 'text-red-500'}>
                             {positive ? '+' : ''}{lot.returnPct.toFixed(2)}%
                           </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex gap-3">
-                            <button onClick={() => setEditFixed(lot)} className="text-xs text-zinc-500 hover:text-zinc-800">Editar</button>
-                            <button onClick={() => deleteFixedMutation.mutate(lot.id)} disabled={deleteFixedMutation.isPending}
-                              className="text-xs text-red-500 hover:text-red-700 disabled:opacity-50">Remover</button>
-                          </div>
                         </td>
                       </tr>
                     )

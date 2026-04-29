@@ -1,4 +1,5 @@
 import { AssetManager } from '@/components/asset-manager'
+import { TransactionList } from '@/components/transaction-list'
 
 export default function AtivosPage() {
   return (
@@ -8,6 +9,7 @@ export default function AtivosPage() {
         <p className="text-sm text-zinc-500 mt-1">Gerencie os ativos da sua carteira</p>
       </div>
       <AssetManager />
+      <TransactionList />
     </div>
   )
 }
