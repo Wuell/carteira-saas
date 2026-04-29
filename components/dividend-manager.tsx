@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 type Dividend = {
   id: string
@@ -9,6 +9,11 @@ type Dividend = {
   type: string
   amount: number
   paidAt: string
+}
+
+type AssetOption = {
+  ticker: string
+  type: string
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -24,8 +29,14 @@ function formatDate(d: string) {
   return new Date(d).toLocaleDateString('pt-BR')
 }
 
-function monthLabel(year: number, month: number) {
-  return new Date(year, month - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+function toMonthKey(d: string) {
+  const date = new Date(d)
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+}
+
+function monthLabel(key: string) {
+  const [year, month] = key.split('-')
+  return new Date(Number(year), Number(month) - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
 }
 
 async function fetchDividends(): Promise<Dividend[]> {
@@ -34,14 +45,125 @@ async function fetchDividends(): Promise<Dividend[]> {
   return res.json()
 }
 
+async function fetchAssets(): Promise<AssetOption[]> {
+  const res = await fetch('/api/portfolio')
+  if (!res.ok) throw new Error('Falha ao buscar ativos')
+  const data = await res.json()
+  return (data.assets ?? [])
+    .filter((a: { type: string }) => a.type === 'stock_br' || a.type === 'fii')
+    .map((a: { ticker: string; type: string }) => ({ ticker: a.ticker, type: a.type }))
+}
+
+// ---------- Filter Panel ----------
+
+type Filters = { month: string; ticker: string }
+
+function FilterPanel({
+  filters, onChange, monthOptions, tickerOptions, onClear,
+}: {
+  filters: Filters
+  onChange: (f: Filters) => void
+  monthOptions: string[]
+  tickerOptions: string[]
+  onClear: () => void
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  const activeCount = (filters.month ? 1 : 0) + (filters.ticker ? 1 : 0)
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors ${activeCount > 0 ? 'border-zinc-900 bg-zinc-900 text-white' : 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300'}`}
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
+        </svg>
+        Filtros
+        {activeCount > 0 && (
+          <span className="rounded-full bg-white text-zinc-900 text-xs w-4 h-4 flex items-center justify-center font-bold">
+            {activeCount}
+          </span>
+        )}
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-10 z-20 w-64 rounded-xl border bg-white shadow-lg p-4 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold text-zinc-900">Filtros</p>
+            {activeCount > 0 && (
+              <button type="button" onClick={() => { onClear(); setOpen(false) }}
+                className="text-xs text-zinc-400 hover:text-zinc-700">
+                Limpar
+              </button>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-zinc-500">Mês</label>
+            <select
+              className="rounded-lg border px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+              value={filters.month}
+              onChange={e => onChange({ ...filters, month: e.target.value })}
+            >
+              <option value="">Todos os meses</option>
+              {monthOptions.map(key => (
+                <option key={key} value={key} className="capitalize">{monthLabel(key)}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-zinc-500">Ticker</label>
+            <select
+              className="rounded-lg border px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+              value={filters.ticker}
+              onChange={e => onChange({ ...filters, ticker: e.target.value })}
+            >
+              <option value="">Todos os tickers</option>
+              {tickerOptions.map(t => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          </div>
+
+          <button type="button" onClick={() => setOpen(false)}
+            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700">
+            Aplicar
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ---------- Main Component ----------
+
 export function DividendManager() {
   const queryClient = useQueryClient()
-  const [form, setForm] = useState({ ticker: '', type: 'fii', amount: '', paidAt: '' })
+  const [form, setForm] = useState({ ticker: '', type: '', amount: '', paidAt: '' })
   const [error, setError] = useState('')
+  const [filters, setFilters] = useState<Filters>({ month: '', ticker: '' })
 
   const { data: dividends = [], isLoading } = useQuery({
     queryKey: ['dividends'],
     queryFn: fetchDividends,
+  })
+
+  const { data: assetOptions = [] } = useQuery({
+    queryKey: ['portfolio'],
+    queryFn: fetchAssets,
   })
 
   const addMutation = useMutation({
@@ -56,7 +178,7 @@ export function DividendManager() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dividends'] })
-      setForm(f => ({ ...f, ticker: '', amount: '', paidAt: '' }))
+      setForm(f => ({ ...f, ticker: '', type: '', amount: '', paidAt: '' }))
       setError('')
     },
     onError: (err: Error) => setError(err.message),
@@ -74,16 +196,34 @@ export function DividendManager() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['dividends'] }),
   })
 
-  function handleSubmit(e: React.FormEvent) {
+  function handleTickerSelect(ticker: string) {
+    const asset = assetOptions.find(a => a.ticker === ticker)
+    setForm(f => ({ ...f, ticker, type: asset?.type ?? '' }))
+  }
+
+  function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
     if (!form.ticker || !form.amount || !form.paidAt) { setError('Preencha todos os campos.'); return }
     addMutation.mutate(form)
   }
 
-  // Agrupa por mês/ano para o resumo
-  const byMonth = dividends.reduce<Record<string, { total: number; year: number; month: number }>>((acc, d) => {
+  // Dados para os filtros (derivados de todos os dividendos, não dos filtrados)
+  const monthOptions = [...new Set(dividends.map(d => toMonthKey(d.paidAt)))].sort((a, b) => b.localeCompare(a))
+  const tickerOptions = [...new Set(dividends.map(d => d.ticker))].sort()
+
+  // Dividendos filtrados
+  const filtered = dividends.filter(d => {
+    if (filters.month && toMonthKey(d.paidAt) !== filters.month) return false
+    if (filters.ticker && d.ticker !== filters.ticker) return false
+    return true
+  })
+
+  // Resumo baseado nos dividendos filtrados (ou todos se sem filtro)
+  const base = filters.month || filters.ticker ? filtered : dividends
+
+  const byMonth = base.reduce<Record<string, { total: number; year: number; month: number }>>((acc, d) => {
+    const key = toMonthKey(d.paidAt)
     const date = new Date(d.paidAt)
-    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
     if (!acc[key]) acc[key] = { total: 0, year: date.getFullYear(), month: date.getMonth() + 1 }
     acc[key].total += d.amount
     return acc
@@ -95,6 +235,8 @@ export function DividendManager() {
     .map(([key, val]) => ({ key, ...val }))
 
   const totalReceived = dividends.reduce((s, d) => s + d.amount, 0)
+  const filteredTotal = filtered.reduce((s, d) => s + d.amount, 0)
+  const hasFilter = !!(filters.month || filters.ticker)
 
   return (
     <div className="flex flex-col gap-6">
@@ -110,9 +252,7 @@ export function DividendManager() {
             {formatBRL(monthSummary[0]?.total ?? 0)}
           </p>
           {monthSummary[0] && (
-            <p className="text-xs text-zinc-400 mt-1 capitalize">
-              {monthLabel(monthSummary[0].year, monthSummary[0].month)}
-            </p>
+            <p className="text-xs text-zinc-400 mt-1 capitalize">{monthLabel(monthSummary[0].key)}</p>
           )}
         </div>
         <div className="rounded-xl border bg-white p-6 shadow-sm">
@@ -132,7 +272,7 @@ export function DividendManager() {
               return (
                 <div key={key} className="flex items-center gap-3">
                   <span className="w-32 text-xs text-zinc-500 capitalize shrink-0">
-                    {monthLabel(year, month)}
+                    {new Date(year, month - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
                   </span>
                   <div className="flex-1 bg-zinc-100 rounded-full h-2 overflow-hidden">
                     <div className="bg-green-500 h-2 rounded-full transition-all" style={{ width: `${pct}%` }} />
@@ -154,26 +294,29 @@ export function DividendManager() {
           {error && <p className="text-sm text-red-500">{error}</p>}
           <form onSubmit={handleSubmit} className="flex flex-col gap-3">
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-zinc-500">Tipo</label>
-              <div className="flex gap-2">
-                {(['fii', 'stock_br'] as const).map(t => (
-                  <button key={t} type="button"
-                    onClick={() => setForm(f => ({ ...f, type: t }))}
-                    className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${form.type === t ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>
-                    {TYPE_LABELS[t]}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="flex flex-col gap-1">
               <label className="text-xs text-zinc-500">Ticker</label>
-              <input
-                className="rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 uppercase"
-                placeholder={form.type === 'fii' ? 'ex: MXRF11' : 'ex: BBDC3'}
+              <select
+                className="rounded-lg border px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300"
                 value={form.ticker}
-                onChange={e => setForm(f => ({ ...f, ticker: e.target.value.toUpperCase() }))}
-              />
+                onChange={e => handleTickerSelect(e.target.value)}
+              >
+                <option value="">Selecione um ativo</option>
+                {assetOptions.length === 0 && (
+                  <option disabled>Nenhum ativo cadastrado</option>
+                )}
+                {assetOptions.map(a => (
+                  <option key={a.ticker} value={a.ticker}>
+                    {a.ticker} ({TYPE_LABELS[a.type] ?? a.type})
+                  </option>
+                ))}
+              </select>
+              {form.type && (
+                <p className="text-xs text-zinc-400">
+                  {TYPE_LABELS[form.type] ?? form.type}
+                </p>
+              )}
             </div>
+
             <div className="flex flex-col gap-1">
               <label className="text-xs text-zinc-500">Valor recebido (R$)</label>
               <input
@@ -184,6 +327,7 @@ export function DividendManager() {
                 onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}
               />
             </div>
+
             <div className="flex flex-col gap-1">
               <label className="text-xs text-zinc-500">Data de pagamento</label>
               <input
@@ -193,6 +337,7 @@ export function DividendManager() {
                 onChange={e => setForm(f => ({ ...f, paidAt: e.target.value }))}
               />
             </div>
+
             <button type="submit" disabled={addMutation.isPending}
               className="rounded-lg bg-green-600 px-5 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50 transition-colors">
               {addMutation.isPending ? 'Registrando...' : 'Registrar'}
@@ -202,8 +347,22 @@ export function DividendManager() {
 
         {/* Histórico */}
         <div className="lg:col-span-2 rounded-xl border bg-white shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b">
-            <p className="text-sm font-semibold text-zinc-900">Histórico</p>
+          <div className="px-6 py-4 border-b flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <p className="text-sm font-semibold text-zinc-900">Histórico</p>
+              {hasFilter && (
+                <span className="text-xs text-zinc-500">
+                  {filtered.length} resultado{filtered.length !== 1 ? 's' : ''} · {formatBRL(filteredTotal)}
+                </span>
+              )}
+            </div>
+            <FilterPanel
+              filters={filters}
+              onChange={setFilters}
+              monthOptions={monthOptions}
+              tickerOptions={tickerOptions}
+              onClear={() => setFilters({ month: '', ticker: '' })}
+            />
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -220,10 +379,14 @@ export function DividendManager() {
                 {isLoading && (
                   <tr><td colSpan={5} className="px-4 py-6 text-center text-zinc-400">Carregando...</td></tr>
                 )}
-                {!isLoading && dividends.length === 0 && (
-                  <tr><td colSpan={5} className="px-4 py-6 text-center text-zinc-400">Nenhum provento registrado.</td></tr>
+                {!isLoading && filtered.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-6 text-center text-zinc-400">
+                      {hasFilter ? 'Nenhum resultado para os filtros selecionados.' : 'Nenhum provento registrado.'}
+                    </td>
+                  </tr>
                 )}
-                {dividends.map(d => (
+                {filtered.map(d => (
                   <tr key={d.id} className="border-b last:border-0 hover:bg-zinc-50 transition-colors">
                     <td className="px-4 py-3 font-medium text-zinc-900">{d.ticker}</td>
                     <td className="px-4 py-3 text-zinc-500">{TYPE_LABELS[d.type] ?? d.type}</td>
