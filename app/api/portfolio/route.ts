@@ -38,22 +38,16 @@ export async function GET() {
     getBatchCryptoQuotes(staleCryptoTickers),
   ])
 
-  // Atualizar cache no banco (sem bloquear a resposta)
-  const cacheUpdates = staleAssets
-    .map((a: Asset) => {
-      const price = a.type === 'crypto'
-        ? freshCryptoPrices[a.ticker.toUpperCase()]
-        : freshStockPrices[a.ticker.toUpperCase()]
-      if (!price) return null
-      return prisma.asset.update({
-        where: { id: a.id },
-        data: { cachedPrice: price, cachedPriceAt: now },
-      })
-    })
-    .filter(Boolean)
-
-  if (cacheUpdates.length > 0) {
-    await Promise.all(cacheUpdates)
+  // Atualizar cache no banco em background (não bloqueia a resposta)
+  for (const a of staleAssets) {
+    const price = a.type === 'crypto'
+      ? freshCryptoPrices[a.ticker.toUpperCase()]
+      : freshStockPrices[a.ticker.toUpperCase()]
+    if (!price) continue
+    prisma.asset.update({
+      where: { id: a.id },
+      data: { cachedPrice: price, cachedPriceAt: now },
+    }).catch(() => {})
   }
 
   // Montar resultado usando preço fresco ou cache
