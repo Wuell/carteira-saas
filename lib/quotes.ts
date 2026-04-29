@@ -80,6 +80,18 @@ export async function detectTickerType(ticker: string): Promise<{ type: string; 
   return null
 }
 
+export async function getQuote(ticker: string, type: string): Promise<number> {
+  if (type === 'crypto') {
+    const prices = await getBatchCryptoQuotes([ticker])
+    return prices[ticker.toUpperCase()] ?? 0
+  }
+  if (type === 'stock_br' || type === 'fii') {
+    const prices = await getBatchStockQuotes([ticker])
+    return prices[ticker.toUpperCase()] ?? 0
+  }
+  return 0
+}
+
 export async function getBatchStockQuotes(tickers: string[]): Promise<Record<string, number>> {
   if (tickers.length === 0) return {}
   try {
