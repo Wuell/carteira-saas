@@ -94,22 +94,26 @@ export async function getQuote(ticker: string, type: string): Promise<number> {
 
 export async function getBatchStockQuotes(tickers: string[]): Promise<Record<string, number>> {
   if (tickers.length === 0) return {}
-  try {
-    const token = process.env.BRAPI_TOKEN
-    const url = `https://brapi.dev/api/quote/${tickers.join(',')}${token ? `?token=${token}` : ''}`
-    const res = await fetch(url)
-    if (!res.ok) return {}
-    const data = await res.json()
-    const result: Record<string, number> = {}
-    for (const r of (data.results ?? [])) {
-      if (r.symbol && r.regularMarketPrice) {
-        result[r.symbol.toUpperCase()] = r.regularMarketPrice
+  const token = process.env.BRAPI_TOKEN
+  const entries = await Promise.all(
+    tickers.map(async ticker => {
+      try {
+        const url = `https://brapi.dev/api/quote/${ticker.toUpperCase()}${token ? `?token=${token}` : ''}`
+        const res = await fetch(url)
+        if (!res.ok) return null
+        const data = await res.json()
+        const price = data.results?.[0]?.regularMarketPrice
+        return price ? { ticker: ticker.toUpperCase(), price } : null
+      } catch {
+        return null
       }
-    }
-    return result
-  } catch {
-    return {}
+    })
+  )
+  const result: Record<string, number> = {}
+  for (const e of entries) {
+    if (e) result[e.ticker] = e.price
   }
+  return result
 }
 
 export async function getBatchCryptoQuotes(tickers: string[]): Promise<Record<string, number>> {
