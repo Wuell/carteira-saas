@@ -58,7 +58,7 @@ export function AllocationChart() {
 
   if (!hasData) {
     return (
-      <div className="rounded-xl border bg-white p-6 shadow-sm flex items-center justify-center h-72 text-zinc-400 text-sm">
+      <div className="rounded-xl border bg-white p-6 shadow-sm flex items-center justify-center h-72 text-zinc-500 text-sm">
         Nenhum ativo cadastrado.
       </div>
     )
@@ -122,7 +122,7 @@ export function AllocationChart() {
               </p>
             </div>
           ) : (
-            <p className="text-xs text-zinc-400">Passe o mouse</p>
+            <p className="text-xs text-zinc-500">Passe o mouse</p>
           )}
         </div>
       </div>

@@ -64,10 +64,10 @@ export function TransactionList() {
         </thead>
         <tbody>
           {isLoading && (
-            <tr><td colSpan={7} className="px-4 py-6 text-center text-zinc-400">Carregando...</td></tr>
+            <tr><td colSpan={7} className="px-4 py-6 text-center text-zinc-500">Carregando...</td></tr>
           )}
           {!isLoading && transactions.length === 0 && (
-            <tr><td colSpan={7} className="px-4 py-6 text-center text-zinc-400">Nenhuma transação registrada.</td></tr>
+            <tr><td colSpan={7} className="px-4 py-6 text-center text-zinc-500">Nenhuma transação registrada.</td></tr>
           )}
           {transactions.map(tx => (
             <tr key={tx.id} className="border-b last:border-0 hover:bg-zinc-50 transition-colors">

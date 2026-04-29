@@ -54,7 +54,7 @@ export function PortfolioCards() {
         <p className={`mt-2 text-2xl font-semibold ${positive ? 'text-green-600' : 'text-red-500'}`}>
           {positive ? '+' : ''}{(data?.returnPct ?? 0).toFixed(2)}%
         </p>
-        <p className="text-xs text-zinc-400 mt-1">
+        <p className="text-xs text-zinc-500 mt-1">
           Investido: {formatBRL(data?.totalInvested ?? 0)}
         </p>
       </div>

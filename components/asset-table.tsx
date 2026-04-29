@@ -86,10 +86,10 @@ export function AssetTable() {
             </thead>
             <tbody>
               {isLoading && (
-                <tr><td colSpan={7} className="px-4 py-6 text-center text-zinc-400">Carregando...</td></tr>
+                <tr><td colSpan={7} className="px-4 py-6 text-center text-zinc-500">Carregando...</td></tr>
               )}
               {!isLoading && assets.length === 0 && (
-                <tr><td colSpan={7} className="px-4 py-6 text-center text-zinc-400">Nenhum ativo cadastrado.</td></tr>
+                <tr><td colSpan={7} className="px-4 py-6 text-center text-zinc-500">Nenhum ativo cadastrado.</td></tr>
               )}
               {assets.map(asset => {
                 const positive = asset.returnPct >= 0
@@ -132,7 +132,7 @@ export function AssetTable() {
               </thead>
               <tbody>
                 {isLoading && (
-                  <tr><td colSpan={6} className="px-4 py-6 text-center text-zinc-400">Carregando...</td></tr>
+                  <tr><td colSpan={6} className="px-4 py-6 text-center text-zinc-500">Carregando...</td></tr>
                 )}
                 {fixedLots.map(lot => {
                   const positive = lot.returnPct >= 0
@@ -143,8 +143,8 @@ export function AssetTable() {
                       <td className="px-4 py-3 text-zinc-500">{isTesouro ? 'Tesouro Direto' : 'CDB / LCI / LCA'}</td>
                       <td className="px-4 py-3 text-zinc-500">
                         {isTesouro
-                          ? <span>{formatDate(lot.startDate)}{lot.annualRate != null && <span className="ml-1 text-zinc-400">· {lot.annualRate}% a.a.</span>}</span>
-                          : <span className="text-zinc-400">Liquidez diária</span>
+                          ? <span>{formatDate(lot.startDate)}{lot.annualRate != null && <span className="ml-1 text-zinc-500">· {lot.annualRate}% a.a.</span>}</span>
+                          : <span className="text-zinc-500">Liquidez diária</span>
                         }
                       </td>
                       <td className="px-4 py-3 text-zinc-700">{formatBRL(lot.investedValue)}</td>
@@ -155,7 +155,7 @@ export function AssetTable() {
                             {positive ? '+' : ''}{lot.returnPct.toFixed(2)}% bruto
                           </span>
                           {lot.netReturnPct != null && (
-                            <span className="text-xs text-zinc-400">
+                            <span className="text-xs text-zinc-500">
                               {lot.netReturnPct >= 0 ? '+' : ''}{lot.netReturnPct.toFixed(2)}% líq. (IR {lot.irRate}%)
                             </span>
                           )}

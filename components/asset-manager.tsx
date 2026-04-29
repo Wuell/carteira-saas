@@ -85,7 +85,7 @@ function EditAssetModal({ asset, onClose, onSave, saving }: {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-base font-semibold text-zinc-900">Editar ativo</p>
-            <p className="text-xs text-zinc-400 mt-0.5">{asset.ticker} · {TYPE_LABELS[asset.type] ?? asset.type}</p>
+            <p className="text-xs text-zinc-500 mt-0.5">{asset.ticker} · {TYPE_LABELS[asset.type] ?? asset.type}</p>
           </div>
           <button onClick={onClose} className="text-zinc-400 hover:text-zinc-600 text-xl leading-none">×</button>
         </div>
@@ -149,7 +149,7 @@ function EditFixedModal({ lot, onClose, onSave, saving }: {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-base font-semibold text-zinc-900">Editar investimento</p>
-            <p className="text-xs text-zinc-400 mt-0.5">{lot.name} · {isTesouro ? 'Tesouro Direto' : 'CDB / LCI / LCA'}</p>
+            <p className="text-xs text-zinc-500 mt-0.5">{lot.name} · {isTesouro ? 'Tesouro Direto' : 'CDB / LCI / LCA'}</p>
           </div>
           <button onClick={onClose} className="text-zinc-400 hover:text-zinc-600 text-xl leading-none">×</button>
         </div>
@@ -378,7 +378,7 @@ export function AssetManager() {
       <th className="px-4 py-3 cursor-pointer select-none hover:text-zinc-700 transition-colors" onClick={() => toggleSort(sortKey)}>
         <span className="flex items-center gap-1">
           {label}
-          <span className={active ? 'text-zinc-700' : 'text-zinc-300'}>{active ? (sort.dir === 'asc' ? '↑' : '↓') : '↕'}</span>
+          <span className={active ? 'text-zinc-700' : 'text-zinc-400'}>{active ? (sort.dir === 'asc' ? '↑' : '↓') : '↕'}</span>
         </span>
       </th>
     )
@@ -416,7 +416,7 @@ export function AssetManager() {
                   className="flex flex-col items-start gap-1.5 rounded-xl border-2 border-zinc-100 bg-zinc-50 p-4 text-left transition-all hover:border-zinc-300 hover:bg-white hover:shadow-sm">
                   <span className="text-2xl">{cat.icon}</span>
                   <span className="text-sm font-semibold text-zinc-900">{cat.label}</span>
-                  <span className="text-xs text-zinc-400">{cat.description}</span>
+                  <span className="text-xs text-zinc-500">{cat.description}</span>
                 </button>
               ))}
             </div>
@@ -428,13 +428,13 @@ export function AssetManager() {
                   className="flex flex-col items-start gap-1.5 rounded-xl border-2 border-zinc-100 bg-zinc-50 p-4 text-left transition-all hover:border-zinc-300 hover:bg-white hover:shadow-sm">
                   <span className="text-2xl">🏦</span>
                   <span className="text-sm font-semibold text-zinc-900">CDB / LCI / LCA</span>
-                  <span className="text-xs text-zinc-400">Informe a rentabilidade acumulada do app do banco</span>
+                  <span className="text-xs text-zinc-500">Informe a rentabilidade acumulada do app do banco</span>
                 </button>
                 <button type="button" onClick={() => selectFixedSub('tesouro')}
                   className="flex flex-col items-start gap-1.5 rounded-xl border-2 border-zinc-100 bg-zinc-50 p-4 text-left transition-all hover:border-zinc-300 hover:bg-white hover:shadow-sm">
                   <span className="text-2xl">🇧🇷</span>
                   <span className="text-sm font-semibold text-zinc-900">Tesouro Direto</span>
-                  <span className="text-xs text-zinc-400">Prefixado — informe a taxa ao ano e a data da compra</span>
+                  <span className="text-xs text-zinc-500">Prefixado — informe a taxa ao ano e a data da compra</span>
                 </button>
               </div>
             </div>
@@ -467,7 +467,7 @@ export function AssetManager() {
                       value={form.ticker}
                       onChange={e => setForm(f => ({ ...f, ticker: e.target.value }))}
                     />
-                    {fetchingPrice && <span className="absolute right-3 top-2.5 text-xs text-zinc-400">buscando...</span>}
+                    {fetchingPrice && <span className="absolute right-3 top-2.5 text-xs text-zinc-500">buscando...</span>}
                   </div>
                   {tickerError && <p className="text-xs text-red-500 mt-1">{tickerError}</p>}
                 </div>
@@ -504,7 +504,7 @@ export function AssetManager() {
                       className="rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
                       placeholder="ex: 7.45" value={form.accumulatedReturn}
                       onChange={e => setForm(f => ({ ...f, accumulatedReturn: e.target.value }))} />
-                    <p className="text-xs text-zinc-400">Leia o % acumulado no app do banco e informe aqui.</p>
+                    <p className="text-xs text-zinc-500">Leia o % acumulado no app do banco e informe aqui.</p>
                   </div>
                 </div>
               )}
@@ -531,7 +531,7 @@ export function AssetManager() {
                       className="rounded-lg border px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300"
                       value={form.maturityDate} onChange={e => setForm(f => ({ ...f, maturityDate: e.target.value }))} />
                   </div>
-                  <p className="sm:col-span-2 text-xs text-zinc-400">O valor atual é calculado automaticamente com juros compostos sobre dias úteis.</p>
+                  <p className="sm:col-span-2 text-xs text-zinc-500">O valor atual é calculado automaticamente com juros compostos sobre dias úteis.</p>
                 </div>
               )}
 
@@ -565,10 +565,10 @@ export function AssetManager() {
                 </thead>
                 <tbody>
                   {isLoading && (
-                    <tr><td colSpan={8} className="px-4 py-6 text-center text-zinc-400">Carregando...</td></tr>
+                    <tr><td colSpan={8} className="px-4 py-6 text-center text-zinc-500">Carregando...</td></tr>
                   )}
                   {!isLoading && assets.length === 0 && (
-                    <tr><td colSpan={8} className="px-4 py-6 text-center text-zinc-400">Nenhum ativo cadastrado.</td></tr>
+                    <tr><td colSpan={8} className="px-4 py-6 text-center text-zinc-500">Nenhum ativo cadastrado.</td></tr>
                   )}
                   {assets.map(asset => {
                     const positive = asset.returnPct >= 0
@@ -620,10 +620,10 @@ export function AssetManager() {
                 </thead>
                 <tbody>
                   {isLoading && (
-                    <tr><td colSpan={7} className="px-4 py-6 text-center text-zinc-400">Carregando...</td></tr>
+                    <tr><td colSpan={7} className="px-4 py-6 text-center text-zinc-500">Carregando...</td></tr>
                   )}
                   {!isLoading && fixedLots.length === 0 && (
-                    <tr><td colSpan={7} className="px-4 py-6 text-center text-zinc-400">Nenhum investimento cadastrado.</td></tr>
+                    <tr><td colSpan={7} className="px-4 py-6 text-center text-zinc-500">Nenhum investimento cadastrado.</td></tr>
                   )}
                   {fixedLots.map(lot => {
                     const positive = lot.returnPct >= 0
@@ -634,8 +634,8 @@ export function AssetManager() {
                         <td className="px-4 py-3 text-zinc-500">{isTesouro ? 'Tesouro Direto' : 'CDB / LCI / LCA'}</td>
                         <td className="px-4 py-3 text-zinc-500">
                           {isTesouro
-                            ? <span>{formatDate(lot.startDate)}{lot.annualRate != null && <span className="ml-1 text-zinc-400">· {lot.annualRate}% a.a.</span>}</span>
-                            : <span className="text-zinc-400">Liquidez diária</span>
+                            ? <span>{formatDate(lot.startDate)}{lot.annualRate != null && <span className="ml-1 text-zinc-500">· {lot.annualRate}% a.a.</span>}</span>
+                            : <span className="text-zinc-500">Liquidez diária</span>
                           }
                         </td>
                         <td className="px-4 py-3 text-zinc-700">{formatBRL(lot.investedValue)}</td>
@@ -646,12 +646,12 @@ export function AssetManager() {
                               {positive ? '+' : ''}{lot.returnPct.toFixed(2)}% bruto
                             </span>
                             {lot.netReturnPct != null && (
-                              <span className="text-xs font-normal text-zinc-400">
+                              <span className="text-xs font-normal text-zinc-500">
                                 {lot.netReturnPct >= 0 ? '+' : ''}{lot.netReturnPct.toFixed(2)}% líq. (IR {lot.irRate}%)
                               </span>
                             )}
                             {isTesouro && lot.accumulatedReturn == null && lot.returnPct === 0 && (
-                              <span className="text-xs text-zinc-400">calculando...</span>
+                              <span className="text-xs text-zinc-500">calculando...</span>
                             )}
                             {!isTesouro && lot.accumulatedReturn == null && (
                               <span className="text-xs text-amber-500">atualize a rentabilidade</span>

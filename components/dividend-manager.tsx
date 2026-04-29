@@ -257,7 +257,7 @@ export function DividendManager() {
             {formatBRL(monthSummary[0]?.total ?? 0)}
           </p>
           {monthSummary[0] && (
-            <p className="text-xs text-zinc-400 mt-1 capitalize">{monthLabel(monthSummary[0].key)}</p>
+            <p className="text-xs text-zinc-500 mt-1">{monthLabel(monthSummary[0].key)}</p>
           )}
         </div>
         <div className="rounded-xl border bg-white p-6 shadow-sm">
@@ -311,12 +311,12 @@ export function DividendManager() {
                 )}
                 {assetOptions.map(a => (
                   <option key={a.ticker} value={a.ticker}>
-                    {a.ticker} ({TYPE_LABELS[a.type] ?? a.type})
+                    {a.ticker}
                   </option>
                 ))}
               </select>
               {form.type && (
-                <p className="text-xs text-zinc-400">
+                <p className="text-xs font-medium text-zinc-600">
                   {TYPE_LABELS[form.type] ?? form.type}
                 </p>
               )}
@@ -382,11 +382,11 @@ export function DividendManager() {
               </thead>
               <tbody>
                 {isLoading && (
-                  <tr><td colSpan={5} className="px-4 py-6 text-center text-zinc-400">Carregando...</td></tr>
+                  <tr><td colSpan={5} className="px-4 py-6 text-center text-zinc-500">Carregando...</td></tr>
                 )}
                 {!isLoading && filtered.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-6 text-center text-zinc-400">
+                    <td colSpan={5} className="px-4 py-6 text-center text-zinc-500">
                       {hasFilter ? 'Nenhum resultado para os filtros selecionados.' : 'Nenhum provento registrado.'}
                     </td>
                   </tr>
