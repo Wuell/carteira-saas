@@ -9,9 +9,10 @@ datasource db {
 model User {
   id             String           @id @default(cuid())
   clerkId        String           @unique
-  assets         Asset[]
-  transactions   Transaction[]
+  assets          Asset[]
+  transactions    Transaction[]
   fixedIncomeLots FixedIncomeLot[]
+  dividends       Dividend[]
 }
 
 model Transaction {
@@ -35,6 +36,17 @@ model Asset {
   avgPrice  Float
   userId    String
   user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Dividend {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  ticker    String
+  type      String   // "stock_br" | "fii"
+  amount    Float    // valor recebido em R$
+  paidAt    DateTime // data do pagamento
   createdAt DateTime @default(now())
 }
 

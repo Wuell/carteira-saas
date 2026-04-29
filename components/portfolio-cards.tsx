@@ -7,6 +7,7 @@ type Portfolio = {
   totalInvested: number
   returnPct: number
   assets: { id: string }[]
+  fixedLots: { id: string }[]
 }
 
 async function fetchPortfolio(): Promise<Portfolio> {
@@ -37,6 +38,7 @@ export function PortfolioCards() {
   }
 
   const positive = (data?.returnPct ?? 0) >= 0
+  const totalPositions = (data?.assets.length ?? 0) + (data?.fixedLots.length ?? 0)
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -58,10 +60,8 @@ export function PortfolioCards() {
       </div>
 
       <div className="rounded-xl border bg-white p-6 shadow-sm">
-        <p className="text-sm text-zinc-500">Ativos na carteira</p>
-        <p className="mt-2 text-2xl font-semibold text-zinc-900">
-          {data?.assets.length ?? 0}
-        </p>
+        <p className="text-sm text-zinc-500">Posições na carteira</p>
+        <p className="mt-2 text-2xl font-semibold text-zinc-900">{totalPositions}</p>
       </div>
     </div>
   )

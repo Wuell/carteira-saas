@@ -14,6 +14,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <Link href="/transacoes" className="rounded-lg px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-100 transition-colors">
           Transações
         </Link>
+        <Link href="/proventos" className="rounded-lg px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-100 transition-colors">
+          Proventos
+        </Link>
       </aside>
       <main className="flex-1 bg-zinc-50 p-8">
         {children}

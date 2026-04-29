@@ -33,18 +33,19 @@ type FixedLotRow = {
 }
 
 type Portfolio = { assets: AssetRow[]; fixedLots: FixedLotRow[] }
-type Category = 'stock' | 'crypto' | 'fixed'
+type Category = 'stock' | 'fii' | 'crypto' | 'fixed'
 type FixedSub = 'cdb' | 'tesouro'
 type SortKey = 'ticker' | 'type' | 'currentValue' | 'returnPct'
 
 const CATEGORIES = [
-  { id: 'stock' as Category, label: 'Ações / FIIs', description: 'B3, ETFs, fundos imobiliários', icon: '📈', apiType: 'stock_br' },
-  { id: 'crypto' as Category, label: 'Cripto', description: 'Bitcoin, Ethereum e outros', icon: '₿', apiType: 'crypto' },
-  { id: 'fixed' as Category, label: 'Renda Fixa', description: 'Tesouro Direto, CDB, LCI', icon: '🏦', apiType: 'fixed' },
+  { id: 'stock' as Category, label: 'Ações',       description: 'Ações BR, ETFs, BDRs',         icon: '📈', apiType: 'stock_br' },
+  { id: 'fii'   as Category, label: 'FIIs',        description: 'Fundos imobiliários B3',        icon: '🏢', apiType: 'fii' },
+  { id: 'crypto' as Category, label: 'Cripto',     description: 'Bitcoin, Ethereum e outros',    icon: '₿',  apiType: 'crypto' },
+  { id: 'fixed' as Category, label: 'Renda Fixa',  description: 'Tesouro Direto, CDB, LCI',     icon: '🏦', apiType: 'fixed' },
 ]
 
 const TYPE_LABELS: Record<string, string> = {
-  stock_br: 'Ação BR', crypto: 'Cripto', stock_us: 'Ação EUA',
+  stock_br: 'Ação', fii: 'FII', crypto: 'Cripto', stock_us: 'Ação EUA',
 }
 
 function formatBRL(v: number) {
@@ -409,7 +410,7 @@ export function AssetManager() {
           </div>
 
           {!selectedCategory ? (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {CATEGORIES.map(cat => (
                 <button key={cat.id} type="button" onClick={() => selectCategory(cat.id)}
                   className="flex flex-col items-start gap-1.5 rounded-xl border-2 border-zinc-100 bg-zinc-50 p-4 text-left transition-all hover:border-zinc-300 hover:bg-white hover:shadow-sm">

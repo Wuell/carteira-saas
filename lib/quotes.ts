@@ -71,8 +71,12 @@ export async function detectTickerType(ticker: string): Promise<{ type: string; 
     const stockRes = await fetch(url)
     if (stockRes.ok) {
       const data = await stockRes.json()
-      const price = data.results?.[0]?.regularMarketPrice
-      if (price) return { type: 'stock_br', price }
+      const result = data.results?.[0]
+      if (result?.regularMarketPrice) {
+        // FIIs terminam em 11 na B3
+        const isFii = ticker.toUpperCase().endsWith('11')
+        return { type: isFii ? 'fii' : 'stock_br', price: result.regularMarketPrice }
+      }
     }
   } catch {}
 
@@ -93,7 +97,7 @@ export async function getQuote(ticker: string, type: string): Promise<number> {
       return data[geckoId]?.brl ?? 0
     }
 
-    if (type === 'stock_br') {
+    if (type === 'stock_br' || type === 'fii') {
       const token = process.env.BRAPI_TOKEN
       const url = `https://brapi.dev/api/quote/${ticker.toUpperCase()}${token ? `?token=${token}` : ''}`
       const res = await fetch(url, { next: { revalidate: 30 } })

@@ -4,24 +4,22 @@ import { useQuery } from '@tanstack/react-query'
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
 import { useState } from 'react'
 
-type Asset = {
-  type: string
-  currentValue: number
-}
-
 type Portfolio = {
-  assets: Asset[]
+  assets: { type: string; currentValue: number }[]
+  fixedLots: { currentValue: number }[]
 }
 
 const TYPE_LABELS: Record<string, string> = {
-  stock_br: 'Ações BR',
-  crypto: 'Cripto',
+  stock_br: 'Ações',
+  fii:      'FIIs',
+  crypto:   'Cripto',
   stock_us: 'Ações EUA',
-  fixed: 'Renda Fixa',
+  fixed:    'Renda Fixa',
 }
 
 const TYPE_COLORS: Record<string, string> = {
   stock_br: '#6366f1',
+  fii:      '#8b5cf6',
   crypto:   '#f59e0b',
   stock_us: '#3b82f6',
   fixed:    '#10b981',
@@ -53,8 +51,12 @@ export function AllocationChart() {
   }
 
   const assets = data?.assets ?? []
+  const fixedLots = data?.fixedLots ?? []
+  const fixedTotal = fixedLots.reduce((s, f) => s + f.currentValue, 0)
 
-  if (assets.length === 0) {
+  const hasData = assets.length > 0 || fixedTotal > 0
+
+  if (!hasData) {
     return (
       <div className="rounded-xl border bg-white p-6 shadow-sm flex items-center justify-center h-72 text-zinc-400 text-sm">
         Nenhum ativo cadastrado.
@@ -67,13 +69,14 @@ export function AllocationChart() {
     return acc
   }, {})
 
+  if (fixedTotal > 0) grouped['fixed'] = fixedTotal
+
   const total = Object.values(grouped).reduce((s, v) => s + v, 0)
 
-  const chartData = Object.entries(grouped).map(([type, value]) => ({
+  const chartData = Object.entries(grouped).map(([type, value], i) => ({
     name: TYPE_LABELS[type] ?? type,
-    rawType: type,
     value: Number(value.toFixed(2)),
-    color: TYPE_COLORS[type] ?? FALLBACK_COLORS[0],
+    color: TYPE_COLORS[type] ?? FALLBACK_COLORS[i % FALLBACK_COLORS.length],
     pct: total > 0 ? (value / total) * 100 : 0,
   }))
 
@@ -133,10 +136,7 @@ export function AllocationChart() {
             onMouseEnter={() => setActiveIndex(index)}
             onMouseLeave={() => setActiveIndex(null)}
           >
-            <span
-              className="inline-block h-3 w-3 rounded-sm flex-shrink-0"
-              style={{ backgroundColor: entry.color }}
-            />
+            <span className="inline-block h-3 w-3 rounded-sm flex-shrink-0" style={{ backgroundColor: entry.color }} />
             <span className="text-xs text-zinc-600">{entry.name}</span>
             <span className="text-xs font-medium text-zinc-900">{entry.pct.toFixed(1)}%</span>
           </div>
