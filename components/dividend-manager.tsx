@@ -271,13 +271,13 @@ export function DividendManager() {
         <div className="rounded-xl border bg-white p-6 shadow-sm">
           <p className="text-sm font-semibold text-zinc-900 mb-4">Recebido por mês</p>
           <div className="flex flex-col gap-2">
-            {monthSummary.map(({ key, total, year, month }) => {
+            {monthSummary.map(({ key, total }) => {
               const maxTotal = Math.max(...monthSummary.map(m => m.total))
               const pct = maxTotal > 0 ? (total / maxTotal) * 100 : 0
               return (
                 <div key={key} className="flex items-center gap-3">
-                  <span className="w-32 text-xs text-zinc-500 capitalize shrink-0">
-                    {new Date(year, month - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
+                  <span className="w-32 text-xs text-zinc-500 shrink-0">
+                    {monthLabel(key)}
                   </span>
                   <div className="flex-1 bg-zinc-100 rounded-full h-2 overflow-hidden">
                     <div className="bg-green-500 h-2 rounded-full transition-all" style={{ width: `${pct}%` }} />
