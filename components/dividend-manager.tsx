@@ -41,7 +41,7 @@ function toMonthKey(d: string) {
 
 function monthLabel(key: string) {
   const [year, month] = key.split('-')
-  return new Date(Number(year), Number(month) - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+  return `${month.padStart(2, '0')}/${year}`
 }
 
 async function fetchDividends(): Promise<Dividend[]> {
