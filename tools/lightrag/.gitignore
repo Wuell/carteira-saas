@@ -1,0 +1,6 @@
+.venv/
+rag_storage/
+.index_manifest.json
+__pycache__/
+*.pyc
+.pytest_cache/

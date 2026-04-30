@@ -1,0 +1,131 @@
+# Knowledge Graph Index
+
+**Entidades:** 1152  
+**Relações:** 1544  
+**Comunidades:** 90
+
+## Top 30 entidades (por degree)
+
+- [[entities/nextjs|Next.js]] — 30
+- [[entities/rag-cli|Rag CLI]] — 24
+- [[entities/carteira-saas|Carteira-SaaS]] — 23
+- [[entities/user|User]] — 20
+- [[entities/asset-manager|Asset Manager]] — 19
+- [[entities/lightrag-kg|Lightrag-KG]] — 19
+- [[entities/post-handler|POST Handler]] — 18
+- [[entities/ticker|Ticker]] — 18
+- [[entities/compiler-options|Compiler Options]] — 16
+- [[entities/dividend-manager|Dividend Manager]] — 15
+- [[entities/allocationchart|AllocationChart]] — 15
+- [[entities/get-function|Get Function]] — 15
+- [[entities/transactionlist|TransactionList]] — 14
+- [[entities/edit-fixed-modal|Edit Fixed Modal]] — 13
+- [[entities/get-or-create-user-function|Get Or Create User Function]] — 13
+- [[entities/stack-detection|Stack Detection]] — 13
+- [[entities/nextresponse|NextResponse]] — 12
+- [[entities/asset-object|Asset Object]] — 12
+- [[entities/auth|Auth]] — 11
+- [[entities/transaction|Transaction]] — 11
+- [[entities/usestate|UseState]] — 11
+- [[entities/detalhes-crticos|Detalhes Críticos]] — 11
+- [[entities/setup-wizard|Setup Wizard]] — 11
+- [[entities/react|React]] — 11
+- [[entities/prisma-client|Prisma Client]] — 10
+- [[entities/prisma|Prisma]] — 10
+- [[entities/post-function|POST Function]] — 10
+- [[entities/delete-function|DELETE Function]] — 10
+- [[entities/fixed-income-api-route|Fixed-Income API Route]] — 10
+- [[entities/http-patch-method|HTTP PATCH Method]] — 10
+
+## Comunidades
+
+- [[communities/community-51]] — 89 entidades
+- [[communities/community-68]] — 76 entidades
+- [[communities/community-89]] — 73 entidades
+- [[communities/community-70]] — 71 entidades
+- [[communities/community-76]] — 66 entidades
+- [[communities/community-61]] — 57 entidades
+- [[communities/community-14]] — 56 entidades
+- [[communities/community-88]] — 55 entidades
+- [[communities/community-74]] — 45 entidades
+- [[communities/community-33]] — 43 entidades
+- [[communities/community-0]] — 42 entidades
+- [[communities/community-60]] — 42 entidades
+- [[communities/community-85]] — 36 entidades
+- [[communities/community-83]] — 34 entidades
+- [[communities/community-26]] — 27 entidades
+- [[communities/community-17]] — 26 entidades
+- [[communities/community-2]] — 24 entidades
+- [[communities/community-67]] — 23 entidades
+- [[communities/community-75]] — 21 entidades
+- [[communities/community-32]] — 20 entidades
+- [[communities/community-38]] — 20 entidades
+- [[communities/community-82]] — 17 entidades
+- [[communities/community-1]] — 15 entidades
+- [[communities/community-37]] — 15 entidades
+- [[communities/community-4]] — 12 entidades
+- [[communities/community-8]] — 11 entidades
+- [[communities/community-11]] — 11 entidades
+- [[communities/community-87]] — 11 entidades
+- [[communities/community-10]] — 9 entidades
+- [[communities/community-31]] — 8 entidades
+- [[communities/community-71]] — 5 entidades
+- [[communities/community-23]] — 4 entidades
+- [[communities/community-48]] — 4 entidades
+- [[communities/community-12]] — 3 entidades
+- [[communities/community-27]] — 3 entidades
+- [[communities/community-35]] — 3 entidades
+- [[communities/community-47]] — 3 entidades
+- [[communities/community-64]] — 3 entidades
+- [[communities/community-80]] — 3 entidades
+- [[communities/community-34]] — 2 entidades
+- [[communities/community-39]] — 2 entidades
+- [[communities/community-40]] — 2 entidades
+- [[communities/community-41]] — 2 entidades
+- [[communities/community-42]] — 2 entidades
+- [[communities/community-43]] — 2 entidades
+- [[communities/community-44]] — 2 entidades
+- [[communities/community-45]] — 2 entidades
+- [[communities/community-49]] — 2 entidades
+- [[communities/community-57]] — 2 entidades
+- [[communities/community-58]] — 2 entidades
+- [[communities/community-59]] — 2 entidades
+- [[communities/community-65]] — 2 entidades
+- [[communities/community-66]] — 2 entidades
+- [[communities/community-84]] — 2 entidades
+- [[communities/community-3]] — 1 entidades
+- [[communities/community-5]] — 1 entidades
+- [[communities/community-6]] — 1 entidades
+- [[communities/community-7]] — 1 entidades
+- [[communities/community-9]] — 1 entidades
+- [[communities/community-13]] — 1 entidades
+- [[communities/community-15]] — 1 entidades
+- [[communities/community-16]] — 1 entidades
+- [[communities/community-18]] — 1 entidades
+- [[communities/community-19]] — 1 entidades
+- [[communities/community-20]] — 1 entidades
+- [[communities/community-21]] — 1 entidades
+- [[communities/community-22]] — 1 entidades
+- [[communities/community-24]] — 1 entidades
+- [[communities/community-25]] — 1 entidades
+- [[communities/community-28]] — 1 entidades
+- [[communities/community-29]] — 1 entidades
+- [[communities/community-30]] — 1 entidades
+- [[communities/community-36]] — 1 entidades
+- [[communities/community-46]] — 1 entidades
+- [[communities/community-50]] — 1 entidades
+- [[communities/community-52]] — 1 entidades
+- [[communities/community-53]] — 1 entidades
+- [[communities/community-54]] — 1 entidades
+- [[communities/community-55]] — 1 entidades
+- [[communities/community-56]] — 1 entidades
+- [[communities/community-62]] — 1 entidades
+- [[communities/community-63]] — 1 entidades
+- [[communities/community-69]] — 1 entidades
+- [[communities/community-72]] — 1 entidades
+- [[communities/community-73]] — 1 entidades
+- [[communities/community-77]] — 1 entidades
+- [[communities/community-78]] — 1 entidades
+- [[communities/community-79]] — 1 entidades
+- [[communities/community-81]] — 1 entidades
+- [[communities/community-86]] — 1 entidades

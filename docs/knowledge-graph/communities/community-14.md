@@ -1,0 +1,61 @@
+---
+community: 14
+size: 56
+---
+
+# Community 14
+
+**Members:** 56
+
+## Top entities
+
+- [[entities/usestate|UseState]] (degree 11)
+- [[entities/form|Form]] (degree 9)
+- [[entities/goback|GoBack]] (degree 8)
+- [[entities/tanstack-react-query|Tanstack React Query]] (degree 8)
+- [[entities/category|Category]] (degree 6)
+- [[entities/selectcategory|SelectCategory]] (degree 6)
+- [[entities/useeffect|UseEffect]] (degree 6)
+- [[entities/addmutation|AddMutation]] (degree 5)
+- [[entities/seterror|SetError]] (degree 5)
+- [[entities/settickererror|SetTickerError]] (degree 5)
+- [[entities/queryclient|QueryClient]] (degree 5)
+- [[entities/usequery|UseQuery]] (degree 4)
+- [[entities/portfoliodata|PortfolioData]] (degree 4)
+- [[entities/setform|SetForm]] (degree 4)
+- [[entities/addfixedmutation|AddFixedMutation]] (degree 4)
+- [[entities/sort|Sort]] (degree 4)
+- [[entities/querykey|QueryKey]] (degree 4)
+- [[entities/invalidatequeries|InvalidateQueries]] (degree 4)
+- [[entities/tickererror|TickerError]] (degree 4)
+- [[entities/error|Error]] (degree 3)
+- [[entities/queryclientprovider|QueryClientProvider]] (degree 3)
+- [[entities/selectfixedsub|SelectFixedSub]] (degree 3)
+- [[entities/setfixedsub|SetFixedSub]] (degree 3)
+- [[entities/selectedcategory|SelectedCategory]] (degree 3)
+- [[entities/fixedsub|FixedSub]] (degree 3)
+- [[entities/usemutation|UseMutation]] (degree 3)
+- [[entities/fetchingprice|FetchingPrice]] (degree 2)
+- [[entities/isloading|IsLoading]] (degree 2)
+- [[entities/togglesort|ToggleSort]] (degree 2)
+- [[entities/assets|Assets]] (degree 2)
+- [[entities/selectedassetid|SelectedAssetId]] (degree 2)
+- [[entities/selected-category|Selected Category]] (degree 2)
+- [[entities/editfixed|EditFixed]] (degree 2)
+- [[entities/editassetmutation|EditAssetMutation]] (degree 2)
+- [[entities/editasset|EditAsset]] (degree 2)
+- [[entities/setfetchingprice|SetFetchingPrice]] (degree 2)
+- [[entities/fetch|Fetch]] (degree 2)
+- [[entities/setselectedcategory|SetSelectedCategory]] (degree 2)
+- [[entities/selectedfixedid|SelectedFixedId]] (degree 2)
+- [[entities/categories|CATEGORIES]] (degree 2)
+- [[entities/apiquote|ApiQuote]] (degree 2)
+- [[entities/setsort|SetSort]] (degree 2)
+- [[entities/fetchportfolio|FetchPortfolio]] (degree 1)
+- [[entities/apifixedincome|ApiFixedIncome]] (degree 1)
+- [[entities/setselectedassetid|SetSelectedAssetId]] (degree 1)
+- [[entities/fixedlots|FixedLots]] (degree 1)
+- [[entities/use-query-hook|Use Query (Hook)]] (degree 1)
+- [[entities/transactions|Transactions]] (degree 1)
+- [[entities/use-mutation-hook|Use Mutation (Hook)]] (degree 1)
+- [[entities/setselectedfixedid|SetSelectedFixedId]] (degree 1)

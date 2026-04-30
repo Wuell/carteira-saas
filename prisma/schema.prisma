@@ -36,6 +36,9 @@ model Asset {
   avgPrice      Float
   cachedPrice   Float?
   cachedPriceAt DateTime?
+  assetSubType  String?   // e.g., "tijolo", "papel", "híbrido" para FIIs; "banco", "energia" para ações
+  sector        String?   // ramo/setor do ativo
+  notes         String?   // observações livres
   userId        String
   user          User      @relation(fields: [userId], references: [id])
   createdAt     DateTime  @default(now())

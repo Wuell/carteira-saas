@@ -1,0 +1,61 @@
+---
+community: 70
+size: 71
+---
+
+# Community 70
+
+**Members:** 71
+
+## Top entities
+
+- [[entities/react|React]] (degree 11)
+- [[entities/app-layouttsx|App/Layout.tsx]] (degree 10)
+- [[entities/html-root-element|HTML Root Element]] (degree 9)
+- [[entities/filter-panel-component|Filter Panel (Component)]] (degree 8)
+- [[entities/children-prop|Children Prop]] (degree 7)
+- [[entities/clerk-nextjs|@Clerk/Nextjs]] (degree 6)
+- [[entities/dividend-manager-component|Dividend Manager Component]] (degree 6)
+- [[entities/queryprovider|QueryProvider]] (degree 6)
+- [[entities/rootlayout|RootLayout]] (degree 6)
+- [[entities/app-pagetsx|App/Page.Tsx]] (degree 5)
+- [[entities/metadata-object|Metadata Object]] (degree 4)
+- [[entities/body-element|Body Element]] (degree 4)
+- [[entities/dashboardlayout|DashboardLayout]] (degree 4)
+- [[entities/redirect-function|Redirect Function]] (degree 4)
+- [[entities/use-state|Use State]] (degree 4)
+- [[entities/show|Show]] (degree 4)
+- [[entities/tsx|Tsx]] (degree 4)
+- [[entities/redirect|Redirect]] (degree 4)
+- [[entities/clerkprovider|ClerkProvider]] (degree 3)
+- [[entities/signed-out-condition|Signed-Out Condition]] (degree 3)
+- [[entities/header-element|Header Element]] (degree 3)
+- [[entities/application-metadata-object|Application Metadata Object]] (degree 3)
+- [[entities/css-variable|CSS Variable]] (degree 3)
+- [[entities/geist-font-loader|Geist Font Loader]] (degree 3)
+- [[entities/next-font-google-module|Next/Font/Google Module]] (degree 3)
+- [[entities/geist-mono-font-loader|Geist Mono Font Loader]] (degree 3)
+- [[entities/geist-sans-variable|Geist Sans Variable]] (degree 3)
+- [[entities/geist-mono-variable|Geist Mono Variable]] (degree 3)
+- [[entities/tailwind-css-classes|Tailwind CSS Classes]] (degree 3)
+- [[entities/react-node|React Node]] (degree 2)
+- [[entities/fetch-assets-function|Fetch Assets (Function)]] (degree 2)
+- [[entities/query-provider-tsx|Query Provider Tsx]] (degree 2)
+- [[entities/carteira-saas|Carteira SaaS]] (degree 2)
+- [[entities/userbutton|UserButton]] (degree 2)
+- [[entities/fetch-dividends-function|Fetch Dividends (Function)]] (degree 2)
+- [[entities/root-page-component|Root Page Component]] (degree 2)
+- [[entities/components-allocation-charttsx|components/allocation-chart.tsx]] (degree 2)
+- [[entities/use-state-hook|Use State (Hook)]] (degree 2)
+- [[entities/use-client-directive|Use Client Directive]] (degree 2)
+- [[entities/metadata|Metadata]] (degree 2)
+- [[entities/query-provider-file|Query Provider File]] (degree 2)
+- [[entities/signinbutton|SignInButton]] (degree 2)
+- [[entities/use-ref-hook|Use Ref (Hook)]] (degree 2)
+- [[entities/dividend-type|Dividend (Type)]] (degree 2)
+- [[entities/main-section|Main Section]] (degree 2)
+- [[entities/gesto-de-carteira-de-investimentos|Gestão De Carteira De Investimentos]] (degree 2)
+- [[entities/geist-sans-font-instance|Geist Sans Font Instance]] (degree 2)
+- [[entities/rootpage|RootPage]] (degree 2)
+- [[entities/signed-in-condition|Signed-In Condition]] (degree 2)
+- [[entities/signupbutton|SignUpButton]] (degree 2)

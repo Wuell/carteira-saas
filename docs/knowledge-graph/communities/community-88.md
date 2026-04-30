@@ -1,0 +1,61 @@
+---
+community: 88
+size: 55
+---
+
+# Community 88
+
+**Members:** 55
+
+## Top entities
+
+- [[entities/ticker|Ticker]] (degree 18)
+- [[entities/post-handler|POST Handler]] (degree 18)
+- [[entities/detecttickertype|detectTickerType]] (degree 10)
+- [[entities/crypto-symbol-map|Crypto Symbol Map]] (degree 9)
+- [[entities/getbatchcryptoquotes|getBatchCryptoQuotes]] (degree 9)
+- [[entities/getbatchstockquotes|getBatchStockQuotes]] (degree 8)
+- [[entities/getquote|getQuote]] (degree 8)
+- [[entities/get-handler|GET Handler]] (degree 8)
+- [[entities/price|Price]] (degree 8)
+- [[entities/lib-quotests|Lib/Quotes.ts]] (degree 7)
+- [[entities/resolvetogeckoid|resolveToGeckoId]] (degree 7)
+- [[entities/investment-asset|Investment Asset]] (degree 6)
+- [[entities/stock-investment|Stock Investment]] (degree 6)
+- [[entities/brazilian-real-formatting-function|Brazilian Real Formatting Function]] (degree 5)
+- [[entities/crypto-investment|Crypto Investment]] (degree 5)
+- [[entities/coingecko-api|Coingecko API]] (degree 5)
+- [[entities/quantity|Quantity]] (degree 5)
+- [[entities/brapi-api|Brapi API]] (degree 4)
+- [[entities/user-id|User ID]] (degree 4)
+- [[entities/average-price|Average Price]] (degree 4)
+- [[entities/app-api-transactions-routets|App/Api/Transactions/Route.Ts]] (degree 3)
+- [[entities/sell-operation|Sell Operation]] (degree 3)
+- [[entities/get-or-create-user|Get Or Create User]] (degree 3)
+- [[entities/typescript|Typescript]] (degree 3)
+- [[entities/buy-operation|Buy Operation]] (degree 3)
+- [[entities/asset|Asset]] (degree 3)
+- [[entities/coingecko-search-api-endpoint|CoinGecko Search API Endpoint]] (degree 2)
+- [[entities/brapi-quote-api-endpoint|Brapi Quote API Endpoint]] (degree 2)
+- [[entities/unit-price|Unit Price]] (degree 2)
+- [[entities/coingecko-simple-price-api-endpoint|CoinGecko Simple Price API Endpoint]] (degree 2)
+- [[entities/set-form|Set Form]] (degree 2)
+- [[entities/brapi_token|BRAPI_TOKEN]] (degree 2)
+- [[entities/coingecko-id|Coingecko ID]] (degree 2)
+- [[entities/current-price|Current Price]] (degree 2)
+- [[entities/crypto-type|Crypto (Type)]] (degree 2)
+- [[entities/fii|FII]] (degree 2)
+- [[entities/http-401-unauthorized|HTTP 401 Unauthorized]] (degree 2)
+- [[entities/stock_br|Stock_BR]] (degree 2)
+- [[entities/tickers-parameter|Tickers (Parameter)]] (degree 2)
+- [[entities/solana|Solana]] (degree 1)
+- [[entities/sol|SOL]] (degree 1)
+- [[entities/http-400-bad-request|HTTP 400 Bad Request]] (degree 1)
+- [[entities/ethereum|Ethereum]] (degree 1)
+- [[entities/brl-brazilian-real|BRL (Brazilian Real)]] (degree 1)
+- [[entities/eth|ETH]] (degree 1)
+- [[entities/cryptocurrency-symbol|Cryptocurrency Symbol]] (degree 1)
+- [[entities/lib-user|Lib/User]] (degree 1)
+- [[entities/bitcoin|Bitcoin]] (degree 1)
+- [[entities/b3|B3]] (degree 1)
+- [[entities/btc|BTC]] (degree 1)

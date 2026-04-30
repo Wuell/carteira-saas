@@ -1,0 +1,61 @@
+---
+community: 76
+size: 66
+---
+
+# Community 76
+
+**Members:** 66
+
+## Top entities
+
+- [[entities/dividend-manager|Dividend Manager]] (degree 15)
+- [[entities/form-state|Form State]] (degree 9)
+- [[entities/add-mutation|Add Mutation]] (degree 8)
+- [[entities/add-dividend-mutation|Add Dividend Mutation]] (degree 8)
+- [[entities/dividends-data|Dividends Data]] (degree 8)
+- [[entities/error-state|Error State]] (degree 8)
+- [[entities/use-mutation-hook|Use Mutation Hook]] (degree 7)
+- [[entities/handle-submit-function|Handle Submit Function]] (degree 7)
+- [[entities/edit-asset-modal-component|Edit Asset Modal Component]] (degree 7)
+- [[entities/query-client|Query Client]] (degree 7)
+- [[entities/query-key|Query Key]] (degree 6)
+- [[entities/filter-state|Filter State]] (degree 6)
+- [[entities/add-fixed-mutation|Add Fixed Mutation]] (degree 6)
+- [[entities/edit-fixed-mutation|Edit Fixed Mutation]] (degree 6)
+- [[entities/edit-asset-mutation|Edit Asset Mutation]] (degree 6)
+- [[entities/delete-dividend-mutation|Delete Dividend Mutation]] (degree 5)
+- [[entities/delete-fixed-mutation|Delete Fixed Mutation]] (degree 4)
+- [[entities/fixed-income-api-endpoint|Fixed-Income API Endpoint]] (degree 4)
+- [[entities/delete-asset-mutation|Delete Asset Mutation]] (degree 4)
+- [[entities/filtered-dividends-data|Filtered Dividends Data]] (degree 4)
+- [[entities/assets-api-endpoint|Assets API Endpoint]] (degree 4)
+- [[entities/categories-constant|Categories Constant]] (degree 4)
+- [[entities/dividend-form-state|Dividend Form State]] (degree 3)
+- [[entities/selected-category-state|Selected Category State]] (degree 3)
+- [[entities/edit-asset-form-type|Edit Asset Form Type]] (degree 3)
+- [[entities/dividends-by-month-summary|Dividends By Month Summary]] (degree 3)
+- [[entities/to-month-key-function|To Month Key Function]] (degree 3)
+- [[entities/base-dividend-data|Base Dividend Data]] (degree 3)
+- [[entities/asset-options-data|Asset Options Data]] (degree 3)
+- [[entities/edit-fixed-modal-component|Edit Fixed Modal Component]] (degree 2)
+- [[entities/average-price-data|Average Price Data]] (degree 2)
+- [[entities/is-pending-fixed-state|Is Pending Fixed State]] (degree 2)
+- [[entities/edit-fixed-state|Edit Fixed State]] (degree 2)
+- [[entities/month-options-data|Month Options Data]] (degree 2)
+- [[entities/edit-asset-state|Edit Asset State]] (degree 2)
+- [[entities/fetch-dividends-function|Fetch Dividends Function]] (degree 2)
+- [[entities/asset-quantity-data|Asset Quantity Data]] (degree 2)
+- [[entities/category-id|Category ID]] (degree 2)
+- [[entities/handle-ticker-select-function|Handle Ticker Select Function]] (degree 2)
+- [[entities/api-dividends-endpoint|Api Dividends Endpoint]] (degree 2)
+- [[entities/on-success-callback|On Success Callback]] (degree 2)
+- [[entities/register-button|Register Button]] (degree 1)
+- [[entities/invested-value-field|Invested Value Field]] (degree 1)
+- [[entities/change-category-button|Change Category Button]] (degree 1)
+- [[entities/filters-type|Filters Type]] (degree 1)
+- [[entities/type-field|Type Field]] (degree 1)
+- [[entities/clear-filters-button|Clear Filters Button]] (degree 1)
+- [[entities/set-form-state|Set Form State]] (degree 1)
+- [[entities/selected-dividend-id-state|Selected Dividend ID State]] (degree 1)
+- [[entities/category-label|Category Label]] (degree 1)

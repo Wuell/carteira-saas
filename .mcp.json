@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "lightrag": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--project",
+        "/home/well/Documentos/Investimentos SaaS/carteira-saas/tools/lightrag",
+        "kg-server"
+      ]
+    }
+  }
+}

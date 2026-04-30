@@ -88,7 +88,7 @@ export function AllocationChart() {
 
       <div className="relative">
         <ResponsiveContainer width="100%" height={260}>
-          <PieChart>
+          <PieChart style={{ outline: 'none' }}>
             <Pie
               data={chartData}
               cx="50%"
@@ -99,6 +99,7 @@ export function AllocationChart() {
               dataKey="value"
               onMouseEnter={(_, index) => setActiveIndex(index)}
               onMouseLeave={() => setActiveIndex(null)}
+              style={{ outline: 'none' }}
             >
               {chartData.map((entry, index) => (
                 <Cell
@@ -106,6 +107,7 @@ export function AllocationChart() {
                   fill={entry.color}
                   stroke="transparent"
                   opacity={activeIndex === null || activeIndex === index ? 1 : 0.4}
+                  style={{ outline: 'none' }}
                 />
               ))}
             </Pie>

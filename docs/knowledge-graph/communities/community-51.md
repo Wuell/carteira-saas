@@ -1,0 +1,61 @@
+---
+community: 51
+size: 89
+---
+
+# Community 51
+
+**Members:** 89
+
+## Top entities
+
+- [[entities/user|User]] (degree 20)
+- [[entities/stack-detection|Stack Detection]] (degree 13)
+- [[entities/setup-wizard|Setup Wizard]] (degree 11)
+- [[entities/obsidian|Obsidian]] (degree 10)
+- [[entities/uv|Uv]] (degree 10)
+- [[entities/obsidian-checklist|Obsidian Checklist]] (degree 8)
+- [[entities/auto-installation|Auto-Installation]] (degree 7)
+- [[entities/activate-mcp-in-claude-code-instructions|Activate MCP In Claude Code Instructions]] (degree 6)
+- [[entities/graph-view|Graph View]] (degree 6)
+- [[entities/summary|Summary]] (degree 6)
+- [[entities/claude-code|Claude Code]] (degree 5)
+- [[entities/stack-detectada|Stack Detectada]] (degree 5)
+- [[entities/global-alias|Global Alias]] (degree 5)
+- [[entities/final-delivery-phase|Final Delivery Phase]] (degree 5)
+- [[entities/noob-friendly-default|Noob-Friendly Default]] (degree 4)
+- [[entities/rag-cli-usage-instructions|Rag CLI Usage Instructions]] (degree 4)
+- [[entities/pre-requisites-detection|Pre-Requisites Detection]] (degree 4)
+- [[entities/askuserquestion|AskUserQuestion]] (degree 4)
+- [[entities/advanced-permanent-alias-method|Advanced Permanent Alias Method]] (degree 4)
+- [[entities/python-311|Python 3.11+]] (degree 4)
+- [[entities/cli-rag|CLI Rag]] (degree 4)
+- [[entities/prerequisites|Prerequisites]] (degree 3)
+- [[entities/pr-reqs|Pré-Reqs]] (degree 3)
+- [[entities/uname-s|Uname -s]] (degree 3)
+- [[entities/reportar|Reportar]] (degree 3)
+- [[entities/python|Python]] (degree 3)
+- [[entities/project|Project]] (degree 2)
+- [[entities/obsidian-groups-feature|Obsidian Groups Feature]] (degree 2)
+- [[entities/linux|Linux]] (degree 2)
+- [[entities/venv-less-alternative-method|Venv-Less Alternative Method]] (degree 2)
+- [[entities/project-root|Project Root]] (degree 2)
+- [[entities/macos|macOS]] (degree 2)
+- [[entities/installation-narration|Installation Narration]] (degree 2)
+- [[entities/phase-0|Phase 0]] (degree 2)
+- [[entities/cmdg-graph-view-command|Cmd+G Graph View Command]] (degree 2)
+- [[entities/graph|Graph]] (degree 2)
+- [[entities/project-venv-activation-method|Project Venv Activation Method]] (degree 2)
+- [[entities/mcp-menu|MCP Menu]] (degree 2)
+- [[entities/entity-type-colors|Entity Type Colors]] (degree 2)
+- [[entities/repository-switch|Repository Switch]] (degree 2)
+- [[entities/obsidian-filter-pathentities|Obsidian Filter Path:Entities/]] (degree 2)
+- [[entities/brew|Brew]] (degree 2)
+- [[entities/packagejson|Package.json]] (degree 1)
+- [[entities/noob-friendly-setup|Noob-Friendly Setup]] (degree 1)
+- [[entities/kg_stats-tool|Kg_Stats Tool]] (degree 1)
+- [[entities/created-files|Created Files]] (degree 1)
+- [[entities/fastapi|FastAPI]] (degree 1)
+- [[entities/permanent-alias|Permanent Alias]] (degree 1)
+- [[entities/claude-settingslocaljson|Claude Settings.local.json]] (degree 1)
+- [[entities/real-cost|Real Cost]] (degree 1)

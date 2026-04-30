@@ -43,3 +43,10 @@ next-env.d.ts
 /app/generated/prisma
 
 .claude
+
+# LightRAG (storage e venv ficam fora do git; markdown do vault é versionado)
+/tools/lightrag/.venv/
+/tools/lightrag/rag_storage/
+/tools/lightrag/.index_manifest.json
+/tools/lightrag/__pycache__/
+/tools/lightrag/**/__pycache__/

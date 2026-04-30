@@ -17,7 +17,7 @@ export async function PATCH(req: NextRequest) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
-  const { id, quantity, avgPrice } = await req.json()
+  const { id, quantity, avgPrice, assetSubType, sector, notes } = await req.json()
   const user = await getOrCreateUser(userId)
   const asset = await prisma.asset.findUnique({ where: { id } })
 
@@ -30,6 +30,9 @@ export async function PATCH(req: NextRequest) {
     data: {
       ...(quantity !== undefined && { quantity: Number(quantity) }),
       ...(avgPrice !== undefined && { avgPrice: Number(avgPrice) }),
+      ...(assetSubType !== undefined && { assetSubType }),
+      ...(sector !== undefined && { sector }),
+      ...(notes !== undefined && { notes }),
     },
   })
 

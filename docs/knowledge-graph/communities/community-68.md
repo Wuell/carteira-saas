@@ -1,0 +1,61 @@
+---
+community: 68
+size: 76
+---
+
+# Community 68
+
+**Members:** 76
+
+## Top entities
+
+- [[entities/fixed-income-investment|Fixed Income Investment]] (degree 10)
+- [[entities/portfolio-cards-component|Portfolio Cards Component]] (degree 10)
+- [[entities/portfolio-type|Portfolio Type]] (degree 9)
+- [[entities/asset-table-component|Asset Table Component]] (degree 9)
+- [[entities/portfolio|Portfolio]] (degree 9)
+- [[entities/return-percentage|Return Percentage]] (degree 8)
+- [[entities/investment-lot|Investment Lot]] (degree 8)
+- [[entities/use-query-hook|Use Query Hook]] (degree 7)
+- [[entities/ativospage|AtivosPage]] (degree 6)
+- [[entities/fixed-investment|Fixed Investment]] (degree 6)
+- [[entities/investment-table|Investment Table]] (degree 6)
+- [[entities/tesouro-direto|Tesouro Direto]] (degree 6)
+- [[entities/cdb-lci-lca|CDB / LCI / LCA]] (degree 5)
+- [[entities/tipo|Tipo]] (degree 5)
+- [[entities/fixed-lots|Fixed Lots]] (degree 5)
+- [[entities/dashboard-page-component|Dashboard Page Component]] (degree 5)
+- [[entities/rentabilidade|Rentabilidade]] (degree 4)
+- [[entities/fixed-income-table|Fixed Income Table]] (degree 4)
+- [[entities/dashboard-page-file|Dashboard Page File]] (degree 4)
+- [[entities/current-value|Current Value]] (degree 4)
+- [[entities/fixed-lot-row|Fixed Lot Row]] (degree 4)
+- [[entities/renda-fixa|Renda Fixa]] (degree 4)
+- [[entities/editar-button|Editar Button]] (degree 4)
+- [[entities/selected-fixed-income-id|Selected Fixed Income ID]] (degree 4)
+- [[entities/dashboard|Dashboard]] (degree 3)
+- [[entities/portfolio-assets|Portfolio Assets]] (degree 3)
+- [[entities/remover-button|Remover Button]] (degree 3)
+- [[entities/fetch-portfolio-method|Fetch Portfolio Method]] (degree 3)
+- [[entities/invested-value|Invested Value]] (degree 3)
+- [[entities/format-brl|Format BRL]] (degree 3)
+- [[entities/fetchportfolio|fetchPortfolio]] (degree 3)
+- [[entities/valor-investido|Valor Investido]] (degree 3)
+- [[entities/fetch-portfolio|Fetch Portfolio]] (degree 3)
+- [[entities/valor-atual|Valor Atual]] (degree 3)
+- [[entities/portfolio-api-endpoint|Portfolio API Endpoint]] (degree 3)
+- [[entities/fetch-portfolio-function|Fetch Portfolio Function]] (degree 3)
+- [[entities/delete-fixed-income-mutation|Delete Fixed Income Mutation]] (degree 2)
+- [[entities/selected-status|Selected Status]] (degree 2)
+- [[entities/assetrow|AssetRow]] (degree 2)
+- [[entities/portfolio-fixed-lots|Portfolio Fixed Lots]] (degree 2)
+- [[entities/set-selected-fixed-id|Set Selected Fixed ID]] (degree 2)
+- [[entities/allocation-chart-component|Allocation Chart Component]] (degree 2)
+- [[entities/lot-id|Lot ID]] (degree 2)
+- [[entities/app-dashboard-ativos-pagetsx|app/(dashboard)/ativos/page.tsx]] (degree 2)
+- [[entities/api-portfolio-endpoint|API Portfolio Endpoint]] (degree 2)
+- [[entities/subtype|SubType]] (degree 2)
+- [[entities/positive-return-flag|Positive Return Flag]] (degree 2)
+- [[entities/nome|Nome]] (degree 2)
+- [[entities/fixedlotrow|FixedLotRow]] (degree 2)
+- [[entities/total-invested|Total Invested]] (degree 2)

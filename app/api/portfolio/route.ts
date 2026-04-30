@@ -69,6 +69,9 @@ export async function GET() {
       currentValue,
       investedValue,
       returnPct,
+      assetSubType: asset.assetSubType ?? null,
+      sector: asset.sector ?? null,
+      notes: asset.notes ?? null,
     }
   })
 

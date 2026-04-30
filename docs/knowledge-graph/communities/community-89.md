@@ -1,0 +1,61 @@
+---
+community: 89
+size: 73
+---
+
+# Community 89
+
+**Members:** 73
+
+## Top entities
+
+- [[entities/get-or-create-user-function|Get Or Create User Function]] (degree 13)
+- [[entities/nextresponse|NextResponse]] (degree 12)
+- [[entities/auth|Auth]] (degree 11)
+- [[entities/delete-function|DELETE Function]] (degree 10)
+- [[entities/post-function|POST Function]] (degree 10)
+- [[entities/prisma-client|Prisma Client]] (degree 10)
+- [[entities/prisma|Prisma]] (degree 10)
+- [[entities/dividend|Dividend]] (degree 9)
+- [[entities/app-api-assets-routets|App/Api/Assets/Route.Ts]] (degree 9)
+- [[entities/nextrequest|NextRequest]] (degree 9)
+- [[entities/typescript|TypeScript]] (degree 8)
+- [[entities/asset-model|Asset Model]] (degree 8)
+- [[entities/delete-api-handler|DELETE API Handler]] (degree 8)
+- [[entities/get-function|GET Function]] (degree 8)
+- [[entities/patch-api-handler|PATCH API Handler]] (degree 8)
+- [[entities/prisma-schema-file|Prisma Schema File]] (degree 8)
+- [[entities/get-api-handler|GET API Handler]] (degree 7)
+- [[entities/app-api-dividends-routets|App/Api/Dividends/Route.ts]] (degree 7)
+- [[entities/user-model|User Model]] (degree 7)
+- [[entities/getorcreateuser|GetOrCreateUser]] (degree 5)
+- [[entities/auth-function|Auth Function]] (degree 5)
+- [[entities/prismaclient|PrismaClient]] (degree 5)
+- [[entities/fixed-income-lot-model|Fixed Income Lot Model]] (degree 5)
+- [[entities/cuid-function|Cuid Function]] (degree 5)
+- [[entities/clerk-id|Clerk Id]] (degree 4)
+- [[entities/now-function|Now Function]] (degree 4)
+- [[entities/adapter|Adapter]] (degree 4)
+- [[entities/userid|UserId]] (degree 4)
+- [[entities/dividend-model|Dividend Model]] (degree 4)
+- [[entities/transaction-model|Transaction Model]] (degree 4)
+- [[entities/find-unique-method|Find Unique Method]] (degree 4)
+- [[entities/unauthorized-error-401|Unauthorized Error (401)]] (degree 3)
+- [[entities/user-id|User Id]] (degree 3)
+- [[entities/globalforprisma|GlobalForPrisma]] (degree 3)
+- [[entities/prismaneonhttp|PrismaNeonHttp]] (degree 3)
+- [[entities/createprismaclient|CreatePrismaClient]] (degree 3)
+- [[entities/no-autorizado|Não Autorizado]] (degree 3)
+- [[entities/lib-dbts|Lib/Db.Ts]] (degree 3)
+- [[entities/prisma-user-model|Prisma User Model]] (degree 3)
+- [[entities/create-method|Create Method]] (degree 3)
+- [[entities/node-env|Node Env]] (degree 2)
+- [[entities/not-found-error-404|Not Found Error (404)]] (degree 2)
+- [[entities/prisma-client-generator|Prisma Client Generator]] (degree 2)
+- [[entities/next-server|Next/Server]] (degree 2)
+- [[entities/database-datasource|Database Datasource]] (degree 2)
+- [[entities/app-api-portfolio-route-ts|App Api Portfolio Route Ts]] (degree 2)
+- [[entities/clerk|Clerk]] (degree 2)
+- [[entities/lib-userts|Lib/User.Ts]] (degree 2)
+- [[entities/existing-user|Existing User]] (degree 2)
+- [[entities/type|Type]] (degree 2)
