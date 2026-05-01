@@ -34,6 +34,9 @@ type Portfolio = {
   fixedLots: FixedLotRow[]
 }
 
+type AssetSortKey = 'ticker' | 'type' | 'currentValue' | 'returnPct'
+type FixedSortKey = 'name' | 'currentValue' | 'returnPct'
+
 const TYPE_LABELS: Record<string, string> = {
   stock_br: 'Ação',
   fii:      'FII',
@@ -51,9 +54,32 @@ function formatBRL(value: number) {
   return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 
+function SortTh({ label, sortKey, current, onToggle }: {
+  label: string
+  sortKey: string
+  current: { key: string; dir: 'asc' | 'desc' }
+  onToggle: (key: string) => void
+}) {
+  const active = current.key === sortKey
+  return (
+    <th
+      className="px-4 py-3 cursor-pointer select-none hover:text-zinc-700 transition-colors"
+      onClick={() => onToggle(sortKey)}
+    >
+      <span className="flex items-center gap-1">
+        {label}
+        <span className={active ? 'text-zinc-700' : 'text-zinc-400'}>
+          {active ? (current.dir === 'asc' ? '↑' : '↓') : '↕'}
+        </span>
+      </span>
+    </th>
+  )
+}
 
 export function AssetTable() {
   const [selectedAsset, setSelectedAsset] = useState<AssetRow | null>(null)
+  const [assetSort, setAssetSort] = useState<{ key: AssetSortKey; dir: 'asc' | 'desc' }>({ key: 'currentValue', dir: 'desc' })
+  const [fixedSort, setFixedSort] = useState<{ key: FixedSortKey; dir: 'asc' | 'desc' }>({ key: 'currentValue', dir: 'desc' })
 
   const { data, isLoading } = useQuery({
     queryKey: ['portfolio'],
@@ -61,8 +87,32 @@ export function AssetTable() {
     refetchInterval: 30000,
   })
 
-  const assets = data?.assets ?? []
-  const fixedLots = data?.fixedLots ?? []
+  function toggleAssetSort(key: string) {
+    const k = key as AssetSortKey
+    setAssetSort(s => s.key === k ? { key: k, dir: s.dir === 'asc' ? 'desc' : 'asc' } : { key: k, dir: 'desc' })
+  }
+
+  function toggleFixedSort(key: string) {
+    const k = key as FixedSortKey
+    setFixedSort(s => s.key === k ? { key: k, dir: s.dir === 'asc' ? 'desc' : 'asc' } : { key: k, dir: 'desc' })
+  }
+
+  const assets = [...(data?.assets ?? [])].sort((a, b) => {
+    const dir = assetSort.dir === 'asc' ? 1 : -1
+    if (assetSort.key === 'ticker') return dir * a.ticker.localeCompare(b.ticker)
+    if (assetSort.key === 'type') return dir * a.type.localeCompare(b.type)
+    if (assetSort.key === 'currentValue') return dir * (a.currentValue - b.currentValue)
+    if (assetSort.key === 'returnPct') return dir * (a.returnPct - b.returnPct)
+    return 0
+  })
+
+  const fixedLots = [...(data?.fixedLots ?? [])].sort((a, b) => {
+    const dir = fixedSort.dir === 'asc' ? 1 : -1
+    if (fixedSort.key === 'name') return dir * a.name.localeCompare(b.name)
+    if (fixedSort.key === 'currentValue') return dir * (a.currentValue - b.currentValue)
+    if (fixedSort.key === 'returnPct') return dir * (a.returnPct - b.returnPct)
+    return 0
+  })
 
   return (
     <>
@@ -71,7 +121,7 @@ export function AssetTable() {
       )}
 
       <div className="flex flex-col gap-4">
-        {/* Ações e Cripto */}
+        {/* Ações, FIIs e Cripto */}
         <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b">
             <p className="text-sm font-semibold text-zinc-900">Ações, FIIs e Cripto</p>
@@ -80,13 +130,13 @@ export function AssetTable() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-zinc-50 text-left text-xs text-zinc-500 uppercase tracking-wider">
-                  <th className="px-4 py-3">Ticker</th>
-                  <th className="px-4 py-3">Tipo</th>
+                  <SortTh label="Ticker"      sortKey="ticker"       current={assetSort} onToggle={toggleAssetSort} />
+                  <SortTh label="Tipo"        sortKey="type"         current={assetSort} onToggle={toggleAssetSort} />
                   <th className="px-4 py-3">Qtd</th>
                   <th className="px-4 py-3">Preço médio</th>
                   <th className="px-4 py-3">Cotação atual</th>
-                  <th className="px-4 py-3">Valor atual</th>
-                  <th className="px-4 py-3">P&L</th>
+                  <SortTh label="Valor atual" sortKey="currentValue" current={assetSort} onToggle={toggleAssetSort} />
+                  <SortTh label="P&L"         sortKey="returnPct"    current={assetSort} onToggle={toggleAssetSort} />
                 </tr>
               </thead>
               <tbody>
@@ -134,16 +184,16 @@ export function AssetTable() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b bg-zinc-50 text-left text-xs text-zinc-500 uppercase tracking-wider">
-                    <th className="px-4 py-3">Nome</th>
+                    <SortTh label="Nome"          sortKey="name"         current={fixedSort} onToggle={toggleFixedSort} />
                     <th className="px-4 py-3">Tipo</th>
                     <th className="px-4 py-3">Valor investido</th>
-                    <th className="px-4 py-3">Valor atual</th>
-                    <th className="px-4 py-3">Rentabilidade</th>
+                    <SortTh label="Valor atual"   sortKey="currentValue" current={fixedSort} onToggle={toggleFixedSort} />
+                    <SortTh label="Rentabilidade" sortKey="returnPct"    current={fixedSort} onToggle={toggleFixedSort} />
                   </tr>
                 </thead>
                 <tbody>
                   {isLoading && (
-                    <tr><td colSpan={6} className="px-4 py-6 text-center text-zinc-500">Carregando...</td></tr>
+                    <tr><td colSpan={5} className="px-4 py-6 text-center text-zinc-500">Carregando...</td></tr>
                   )}
                   {fixedLots.map(lot => {
                     const positive = lot.returnPct >= 0
