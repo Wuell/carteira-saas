@@ -9,6 +9,8 @@ import {
   YAxis,
   Cell,
   ResponsiveContainer,
+  PieChart,
+  Pie,
 } from 'recharts'
 import {
   inferSector,
@@ -249,6 +251,69 @@ function SectorBarChart({ groups }: { groups: SectorGroup[] }) {
   )
 }
 
+// ——— Segment pie chart ———
+
+type PieItem = {
+  name: string
+  value: number
+  pct: number
+  color: string
+}
+
+function SegmentPieChart({ items }: { items: PieItem[] }) {
+  const [activeIndex, setActiveIndex] = useState<number | null>(null)
+
+  if (items.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-32 text-sm text-zinc-600">
+        Nenhum segmento definido.
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <div style={{ width: '100%', height: 200 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={items}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              outerRadius={90}
+              isAnimationActive={false}
+              onMouseEnter={(_, index) => setActiveIndex(index)}
+              onMouseLeave={() => setActiveIndex(null)}
+            >
+              {items.map((entry, index) => (
+                <Cell
+                  key={index}
+                  fill={entry.color}
+                  opacity={activeIndex === null || activeIndex === index ? 1 : 0.4}
+                />
+              ))}
+            </Pie>
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+      <div className="flex flex-col gap-1 mt-4">
+        {items.map(item => (
+          <div key={item.name} className="flex items-center gap-2 text-xs">
+            <span
+              className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+              style={{ backgroundColor: item.color }}
+            />
+            <span className="text-zinc-700">{item.name}</span>
+            <span className="ml-auto font-medium text-zinc-900">{item.pct.toFixed(1)}%</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // ——— FII table with Segmento + Tipo de Fundo columns ———
 
 function FiiTabTable({
@@ -470,6 +535,16 @@ function StockTabTable({
     return sumB - sumA
   })
 
+  // Build segment concentration map
+  const segmentValueMap = new Map<string, number>()
+  for (const a of assets) {
+    if (a.stockSegment !== 'Não definido') {
+      segmentValueMap.set(a.stockSegment, (segmentValueMap.get(a.stockSegment) ?? 0) + a.currentValue)
+    }
+  }
+  // Track which segment has already shown its alert (first row in that segment group)
+  const segmentAlertShown = new Set<string>()
+
   if (sectors.length === 0) {
     return (
       <div className="flex items-center justify-center py-10 text-sm text-zinc-600">
@@ -505,6 +580,16 @@ function StockTabTable({
               const sectorKey = `${asset.id}:sector`
               const segmentKey = `${asset.id}:segment`
               const isSegmentUndefined = asset.stockSegment === 'Não definido'
+
+              // Segment alert: show only on first occurrence of that segment across entire table
+              const segmentPct = totalValue > 0
+                ? ((segmentValueMap.get(asset.stockSegment) ?? 0) / totalValue) * 100
+                : 0
+              const isFirstSegmentOccurrence =
+                !isSegmentUndefined && !segmentAlertShown.has(asset.stockSegment)
+              if (isFirstSegmentOccurrence) segmentAlertShown.add(asset.stockSegment)
+              const segmentIsHigh = isFirstSegmentOccurrence && segmentPct > 40
+              const segmentIsModerate = isFirstSegmentOccurrence && segmentPct > 30 && !segmentIsHigh
 
               return (
                 <tr
@@ -544,7 +629,7 @@ function StockTabTable({
                             </span>
                             {isHighConcentration && (
                               <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-600">
-                                {sectorPct.toFixed(0)}% — Alta
+                                {sectorPct.toFixed(0)}% — Alta concentração
                               </span>
                             )}
                             {isModerateConcentration && (
@@ -591,7 +676,7 @@ function StockTabTable({
 
                   {/* Segmento */}
                   <td className="px-4 py-3">
-                    <span className="flex items-center gap-1">
+                    <span className="flex items-center gap-2 flex-wrap">
                       {editing === segmentKey ? (
                         <SectorEditor
                           assetId={asset.id}
@@ -610,6 +695,16 @@ function StockTabTable({
                           >
                             {asset.stockSegment}
                           </span>
+                          {segmentIsHigh && (
+                            <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-600">
+                              {segmentPct.toFixed(0)}% em {asset.stockSegment} — Alta concentração
+                            </span>
+                          )}
+                          {segmentIsModerate && (
+                            <span className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-semibold text-orange-700">
+                              {segmentPct.toFixed(0)}% em {asset.stockSegment} — Atenção
+                            </span>
+                          )}
                           <button
                             onClick={() => setEditing(segmentKey)}
                             className="rounded p-0.5 text-zinc-400 hover:text-green-600 hover:bg-green-50 transition-colors"
@@ -678,8 +773,8 @@ export function Diversificacao() {
       asset.sector?.trim() ||
       inferSector(asset.ticker) ||
       'Sem setor'
-    const fundType = inferFundType(asset.ticker) || asset.assetSubType || 'Não definido'
-    const stockSegment = inferStockSegment(asset.ticker) || asset.assetSubType || 'Não definido'
+    const fundType = asset.assetSubType?.trim() || inferFundType(asset.ticker) || 'Não definido'
+    const stockSegment = asset.assetSubType?.trim() || inferStockSegment(asset.ticker) || 'Não definido'
     return { ...asset, currentValue, investedValue, resolvedSector, fundType, stockSegment }
   })
 
@@ -720,6 +815,23 @@ export function Diversificacao() {
       value,
       pct: fiiTotalValue > 0 ? (value / fiiTotalValue) * 100 : 0,
       color: fundTypeColor(index),
+    }))
+
+  // Build stock segment pie items (Ações only, excludes 'Não definido')
+  const stockSegmentMap = new Map<string, number>()
+  for (const a of stocks) {
+    if (a.stockSegment !== 'Não definido') {
+      stockSegmentMap.set(a.stockSegment, (stockSegmentMap.get(a.stockSegment) ?? 0) + a.currentValue)
+    }
+  }
+  const stocksTotalValue = stocks.reduce((s, a) => s + a.currentValue, 0)
+  const stockSegmentPieItems: PieItem[] = [...stockSegmentMap.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([name, value], index) => ({
+      name,
+      value,
+      pct: stocksTotalValue > 0 ? (value / stocksTotalValue) * 100 : 0,
+      color: sectorColor(index),
     }))
 
   return (
@@ -771,18 +883,46 @@ export function Diversificacao() {
                   <div>
                     <p className="text-sm font-semibold text-zinc-700 mb-3">Distribuição por Tipo de Fundo</p>
                     <SectorBarChart groups={fundTypeGroups} />
+                    {fundTypeGroups.some(g => g.pct > 30) && (
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        {fundTypeGroups
+                          .filter(g => g.pct > 30)
+                          .map(g => (
+                            <span
+                              key={g.sector}
+                              className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                                g.pct > 40
+                                  ? 'bg-red-100 text-red-600'
+                                  : 'bg-orange-100 text-orange-700'
+                              }`}
+                            >
+                              {g.pct.toFixed(0)}% em {g.sector} —{' '}
+                              {g.pct > 40 ? 'Alta concentração' : 'Atenção'}
+                            </span>
+                          ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </>
             ) : (
               <>
                 <p className="text-base font-bold text-zinc-900 mb-1">
-                  Distribuição por setor
+                  Distribuição por setor e segmento
                 </p>
                 <p className="text-xs text-zinc-600 mb-5">
                   Percentual calculado sobre o valor atual de mercado
                 </p>
-                <SectorBarChart groups={sectorGroups} />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-sm font-semibold text-zinc-700 mb-3">Distribuição por Setor</p>
+                    <SectorBarChart groups={sectorGroups} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-zinc-700 mb-3">Distribuição por Segmento</p>
+                    <SegmentPieChart items={stockSegmentPieItems} />
+                  </div>
+                </div>
               </>
             )}
           </div>

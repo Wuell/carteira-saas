@@ -61,15 +61,18 @@ export const TICKER_SECTOR: Record<string, string> = {
   RURA11: 'Agro',
   RZAG11: 'Agro',
 
-  // Ações — Bancos
-  ITUB3:  'Bancos',
-  ITUB4:  'Bancos',
-  BBDC3:  'Bancos',
-  BBDC4:  'Bancos',
-  SANB11: 'Bancos',
-  BBAS3:  'Bancos',
-  BPAC11: 'Bancos',
-  BRSR6:  'Bancos',
+  // Ações — Financeiro
+  ITUB3:  'Financeiro',
+  ITUB4:  'Financeiro',
+  BBDC3:  'Financeiro',
+  BBDC4:  'Financeiro',
+  SANB11: 'Financeiro',
+  BBAS3:  'Financeiro',
+  BPAC11: 'Financeiro',
+  BRSR6:  'Financeiro',
+  BBSE3:  'Financeiro',
+  CXSE3:  'Financeiro',
+  IRBR3:  'Financeiro',
 
   // Ações — Petróleo e Gás
   PETR3: 'Petróleo e Gás',
@@ -79,10 +82,13 @@ export const TICKER_SECTOR: Record<string, string> = {
   VBBR3: 'Petróleo e Gás',
   UGPA3: 'Petróleo e Gás',
 
-  // Ações — Mineração
-  VALE3: 'Mineração',
-  CMIN3: 'Mineração',
-  CSNA3: 'Mineração',
+  // Ações — Materiais Básicos
+  VALE3: 'Materiais Básicos',
+  CMIN3: 'Materiais Básicos',
+  CSNA3: 'Materiais Básicos',
+  USIM5: 'Materiais Básicos',
+  GGBR4: 'Materiais Básicos',
+  GOAU4: 'Materiais Básicos',
 
   // Ações — Energia Elétrica
   EGIE3:  'Energia Elétrica',
@@ -95,13 +101,13 @@ export const TICKER_SECTOR: Record<string, string> = {
   ELET3:  'Energia Elétrica',
   ELET6:  'Energia Elétrica',
 
-  // Ações — Varejo
-  MGLU3: 'Varejo',
-  AMER3: 'Varejo',
-  LREN3: 'Varejo',
-  AMAR3: 'Varejo',
-  CEAB3: 'Varejo',
-  SBFG3: 'Varejo',
+  // Ações — Comércio
+  MGLU3: 'Comércio',
+  AMER3: 'Comércio',
+  LREN3: 'Comércio',
+  AMAR3: 'Comércio',
+  CEAB3: 'Comércio',
+  SBFG3: 'Comércio',
 
   // Ações — Saúde
   RDOR3: 'Saúde',
@@ -114,11 +120,6 @@ export const TICKER_SECTOR: Record<string, string> = {
   VIVT3: 'Telecomunicações',
   TIMS3: 'Telecomunicações',
   OIBR3: 'Telecomunicações',
-
-  // Ações — Siderurgia
-  USIM5: 'Siderurgia',
-  GGBR4: 'Siderurgia',
-  GOAU4: 'Siderurgia',
 
   // Ações — Agropecuária
   SLCE3: 'Agropecuária',
@@ -133,29 +134,24 @@ export const TICKER_SECTOR: Record<string, string> = {
   DIRR3: 'Construção Civil',
   TRIS3: 'Construção Civil',
 
-  // Ações — Logística
-  RAIL3: 'Logística',
-  ECOR3: 'Logística',
-  GOL4:  'Logística',
-  AZUL4: 'Logística',
-  CCRO3: 'Logística',
+  // Ações — Transporte
+  RAIL3: 'Transporte',
+  ECOR3: 'Transporte',
+  GOL4:  'Transporte',
+  AZUL4: 'Transporte',
+  CCRO3: 'Transporte',
 
-  // Ações — Consumo
-  AMBEV3: 'Consumo',
-  BRFS3:  'Consumo',
-  JBSS3:  'Consumo',
-  MRFG3:  'Consumo',
-  BEEF3:  'Consumo',
+  // Ações — Alimentos e Bebidas
+  AMBEV3: 'Alimentos e Bebidas',
+  BRFS3:  'Alimentos e Bebidas',
+  JBSS3:  'Alimentos e Bebidas',
+  MRFG3:  'Alimentos e Bebidas',
+  BEEF3:  'Alimentos e Bebidas',
 
-  // Ações — Tecnologia
-  TOTVS3: 'Tecnologia',
-  POSI3:  'Tecnologia',
-  LWSA3:  'Tecnologia',
-
-  // Ações — Seguros
-  BBSE3: 'Seguros',
-  CXSE3: 'Seguros',
-  IRBR3: 'Seguros',
+  // Ações — Tecnologia da Informação
+  TOTVS3: 'Tecnologia da Informação',
+  POSI3:  'Tecnologia da Informação',
+  LWSA3:  'Tecnologia da Informação',
 }
 
 export const FII_SECTORS = [
@@ -170,20 +166,18 @@ export const FII_SECTORS = [
 ]
 
 export const STOCK_SECTORS = [
-  'Bancos',
+  'Financeiro',
   'Petróleo e Gás',
-  'Mineração',
+  'Materiais Básicos',
   'Energia Elétrica',
-  'Varejo',
+  'Comércio',
   'Saúde',
   'Telecomunicações',
-  'Siderurgia',
   'Agropecuária',
   'Construção Civil',
-  'Logística',
-  'Consumo',
-  'Tecnologia',
-  'Seguros',
+  'Transporte',
+  'Alimentos e Bebidas',
+  'Tecnologia da Informação',
 ]
 
 export function inferSector(ticker: string): string | null {
