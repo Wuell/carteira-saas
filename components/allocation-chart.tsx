@@ -18,14 +18,14 @@ const TYPE_LABELS: Record<string, string> = {
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  stock_br: '#6366f1',
-  fii:      '#8b5cf6',
+  stock_br: '#16a34a',
+  fii:      '#22c55e',
   crypto:   '#f59e0b',
-  stock_us: '#3b82f6',
-  fixed:    '#10b981',
+  stock_us: '#0ea5e9',
+  fixed:    '#84cc16',
 }
 
-const FALLBACK_COLORS = ['#6366f1', '#f59e0b', '#3b82f6', '#10b981', '#f43f5e', '#8b5cf6']
+const FALLBACK_COLORS = ['#16a34a', '#22c55e', '#f59e0b', '#0ea5e9', '#84cc16', '#f43f5e']
 
 async function fetchPortfolio(): Promise<Portfolio> {
   const res = await fetch('/api/portfolio')
@@ -47,7 +47,7 @@ export function AllocationChart() {
   })
 
   if (isLoading) {
-    return <div className="rounded-xl border bg-white p-6 shadow-sm h-72 animate-pulse" />
+    return <div className="rounded-2xl border border-zinc-200/60 bg-white p-6 shadow-sm h-72 animate-pulse" />
   }
 
   const assets = data?.assets ?? []
@@ -58,7 +58,7 @@ export function AllocationChart() {
 
   if (!hasData) {
     return (
-      <div className="rounded-xl border bg-white p-6 shadow-sm flex items-center justify-center h-72 text-zinc-500 text-sm">
+      <div className="rounded-2xl border border-zinc-200/60 bg-white p-6 shadow-sm flex items-center justify-center h-72 text-zinc-600 text-sm">
         Nenhum ativo cadastrado.
       </div>
     )
@@ -83,8 +83,8 @@ export function AllocationChart() {
   const active = activeIndex !== null ? chartData[activeIndex] : null
 
   return (
-    <div className="rounded-xl border bg-white p-6 shadow-sm">
-      <p className="text-sm font-semibold text-zinc-900 mb-4">Alocação por classe</p>
+    <div className="rounded-2xl border border-zinc-200/60 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
+      <p className="text-base font-bold text-zinc-900 mb-4">Alocação por classe</p>
 
       <div className="relative">
         <ResponsiveContainer width="100%" height={260}>
@@ -117,14 +117,14 @@ export function AllocationChart() {
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           {active ? (
             <div className="text-center">
-              <p className="text-sm font-semibold text-zinc-900">{active.name}</p>
-              <p className="text-xs text-zinc-500 mt-0.5">{formatBRL(active.value)}</p>
-              <p className="text-xs font-medium mt-0.5" style={{ color: active.color }}>
+              <p className="text-sm font-bold text-zinc-900">{active.name}</p>
+              <p className="text-xs text-zinc-600 mt-0.5">{formatBRL(active.value)}</p>
+              <p className="text-xs font-semibold mt-0.5" style={{ color: active.color }}>
                 {active.pct.toFixed(1)}%
               </p>
             </div>
           ) : (
-            <p className="text-xs text-zinc-500">Passe o mouse</p>
+            <p className="text-xs text-zinc-600">Passe o mouse</p>
           )}
         </div>
       </div>
@@ -138,9 +138,9 @@ export function AllocationChart() {
             onMouseEnter={() => setActiveIndex(index)}
             onMouseLeave={() => setActiveIndex(null)}
           >
-            <span className="inline-block h-3 w-3 rounded-sm flex-shrink-0" style={{ backgroundColor: entry.color }} />
-            <span className="text-xs text-zinc-600">{entry.name}</span>
-            <span className="text-xs font-medium text-zinc-900">{entry.pct.toFixed(1)}%</span>
+            <span className="inline-block h-3 w-3 rounded-full flex-shrink-0" style={{ backgroundColor: entry.color }} />
+            <span className="text-xs text-zinc-700">{entry.name}</span>
+            <span className="text-xs font-semibold text-zinc-900">{entry.pct.toFixed(1)}%</span>
           </div>
         ))}
       </div>

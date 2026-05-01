@@ -63,12 +63,12 @@ function SortTh({ label, sortKey, current, onToggle }: {
   const active = current.key === sortKey
   return (
     <th
-      className="px-4 py-3 cursor-pointer select-none hover:text-zinc-700 transition-colors"
+      className={`px-4 py-3 cursor-pointer select-none transition-colors ${active ? 'text-green-600' : 'text-zinc-600 hover:text-green-600'}`}
       onClick={() => onToggle(sortKey)}
     >
       <span className="flex items-center gap-1">
         {label}
-        <span className={active ? 'text-zinc-700' : 'text-zinc-400'}>
+        <span className={active ? 'text-green-600' : 'text-zinc-500'}>
           {active ? (current.dir === 'asc' ? '↑' : '↓') : '↕'}
         </span>
       </span>
@@ -122,14 +122,14 @@ export function AssetTable() {
 
       <div className="flex flex-col gap-4">
         {/* Ações, FIIs e Cripto */}
-        <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b">
-            <p className="text-sm font-semibold text-zinc-900">Ações, FIIs e Cripto</p>
+        <div className="rounded-2xl border border-zinc-200/60 bg-white shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+          <div className="px-6 py-4 border-b border-zinc-200/60">
+            <p className="text-base font-bold text-zinc-900">Ações, FIIs e Cripto</p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b bg-zinc-50 text-left text-xs text-zinc-500 uppercase tracking-wider">
+                <tr className="border-b border-zinc-200/60 bg-zinc-50 text-left text-xs text-zinc-600 uppercase tracking-wider">
                   <SortTh label="Ticker"      sortKey="ticker"       current={assetSort} onToggle={toggleAssetSort} />
                   <SortTh label="Tipo"        sortKey="type"         current={assetSort} onToggle={toggleAssetSort} />
                   <th className="px-4 py-3">Qtd</th>
@@ -141,29 +141,29 @@ export function AssetTable() {
               </thead>
               <tbody>
                 {isLoading && (
-                  <tr><td colSpan={7} className="px-4 py-6 text-center text-zinc-500">Carregando...</td></tr>
+                  <tr><td colSpan={7} className="px-4 py-6 text-center text-zinc-600">Carregando...</td></tr>
                 )}
                 {!isLoading && assets.length === 0 && (
-                  <tr><td colSpan={7} className="px-4 py-6 text-center text-zinc-500">Nenhum ativo cadastrado.</td></tr>
+                  <tr><td colSpan={7} className="px-4 py-6 text-center text-zinc-600">Nenhum ativo cadastrado.</td></tr>
                 )}
                 {assets.map(asset => {
                   const positive = asset.returnPct >= 0
                   return (
-                    <tr key={asset.id} className="border-b last:border-0 hover:bg-zinc-50 transition-colors">
+                    <tr key={asset.id} className="border-b border-zinc-200/60 last:border-0 hover:bg-green-50/40 transition-colors">
                       <td className="px-4 py-3">
                         <button
                           onClick={() => setSelectedAsset(asset)}
-                          className="font-medium text-zinc-900 hover:underline underline-offset-2 transition-colors"
+                          className="font-semibold text-zinc-900 hover:text-green-600 hover:underline underline-offset-2 transition-colors"
                         >
                           {asset.ticker}
                         </button>
                       </td>
-                      <td className="px-4 py-3 text-zinc-500">{TYPE_LABELS[asset.type] ?? asset.type}</td>
+                      <td className="px-4 py-3 text-zinc-700">{TYPE_LABELS[asset.type] ?? asset.type}</td>
                       <td className="px-4 py-3 text-zinc-700">{asset.quantity}</td>
                       <td className="px-4 py-3 text-zinc-700">{formatBRL(asset.avgPrice)}</td>
                       <td className="px-4 py-3 text-zinc-700">{formatBRL(asset.currentPrice)}</td>
-                      <td className="px-4 py-3 text-zinc-700">{formatBRL(asset.currentValue)}</td>
-                      <td className={`px-4 py-3 font-medium ${positive ? 'text-green-600' : 'text-red-500'}`}>
+                      <td className="px-4 py-3 text-zinc-900 font-medium">{formatBRL(asset.currentValue)}</td>
+                      <td className={`px-4 py-3 font-semibold ${positive ? 'text-green-600' : 'text-red-500'}`}>
                         {positive ? '+' : ''}{asset.returnPct.toFixed(2)}%
                       </td>
                     </tr>
@@ -176,14 +176,14 @@ export function AssetTable() {
 
         {/* Renda Fixa */}
         {(isLoading || fixedLots.length > 0) && (
-          <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b">
-              <p className="text-sm font-semibold text-zinc-900">Renda Fixa</p>
+          <div className="rounded-2xl border border-zinc-200/60 bg-white shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+            <div className="px-6 py-4 border-b border-zinc-200/60">
+              <p className="text-base font-bold text-zinc-900">Renda Fixa</p>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b bg-zinc-50 text-left text-xs text-zinc-500 uppercase tracking-wider">
+                  <tr className="border-b border-zinc-200/60 bg-zinc-50 text-left text-xs text-zinc-600 uppercase tracking-wider">
                     <SortTh label="Nome"          sortKey="name"         current={fixedSort} onToggle={toggleFixedSort} />
                     <th className="px-4 py-3">Tipo</th>
                     <th className="px-4 py-3">Valor investido</th>
@@ -193,18 +193,18 @@ export function AssetTable() {
                 </thead>
                 <tbody>
                   {isLoading && (
-                    <tr><td colSpan={5} className="px-4 py-6 text-center text-zinc-500">Carregando...</td></tr>
+                    <tr><td colSpan={5} className="px-4 py-6 text-center text-zinc-600">Carregando...</td></tr>
                   )}
                   {fixedLots.map(lot => {
                     const positive = lot.returnPct >= 0
                     const isTesouro = lot.subType === 'tesouro'
                     return (
-                      <tr key={lot.id} className="border-b last:border-0 hover:bg-zinc-50 transition-colors">
-                        <td className="px-4 py-3 font-medium text-zinc-900">{lot.name}</td>
-                        <td className="px-4 py-3 text-zinc-500">{isTesouro ? 'Tesouro Direto' : 'CDB / LCI / LCA'}</td>
+                      <tr key={lot.id} className="border-b border-zinc-200/60 last:border-0 hover:bg-green-50/40 transition-colors">
+                        <td className="px-4 py-3 font-semibold text-zinc-900">{lot.name}</td>
+                        <td className="px-4 py-3 text-zinc-700">{isTesouro ? 'Tesouro Direto' : 'CDB / LCI / LCA'}</td>
                         <td className="px-4 py-3 text-zinc-700">{formatBRL(lot.investedValue)}</td>
-                        <td className="px-4 py-3 text-zinc-700">{formatBRL(lot.currentValue)}</td>
-                        <td className="px-4 py-3 font-medium">
+                        <td className="px-4 py-3 text-zinc-900 font-medium">{formatBRL(lot.currentValue)}</td>
+                        <td className="px-4 py-3 font-semibold">
                           <span className={positive ? 'text-green-600' : 'text-red-500'}>
                             {positive ? '+' : ''}{lot.returnPct.toFixed(2)}%
                           </span>

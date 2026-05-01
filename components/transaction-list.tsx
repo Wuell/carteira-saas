@@ -46,13 +46,13 @@ export function TransactionList() {
   })
 
   return (
-    <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
-      <div className="px-6 py-4 border-b">
-        <p className="text-sm font-semibold text-zinc-900">Histórico de transações</p>
+    <div className="rounded-2xl border border-zinc-200/60 bg-white shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+      <div className="px-6 py-4 border-b border-zinc-200/60">
+        <p className="text-base font-bold text-zinc-900">Histórico de transações</p>
       </div>
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b bg-zinc-50 text-left text-xs text-zinc-500 uppercase tracking-wider">
+          <tr className="border-b border-zinc-200/60 bg-zinc-50 text-left text-xs text-zinc-600 uppercase tracking-wider">
             <th className="px-4 py-3">Data</th>
             <th className="px-4 py-3">Operação</th>
             <th className="px-4 py-3">Ticker</th>
@@ -64,16 +64,16 @@ export function TransactionList() {
         </thead>
         <tbody>
           {isLoading && (
-            <tr><td colSpan={7} className="px-4 py-6 text-center text-zinc-500">Carregando...</td></tr>
+            <tr><td colSpan={7} className="px-4 py-6 text-center text-zinc-600">Carregando...</td></tr>
           )}
           {!isLoading && transactions.length === 0 && (
-            <tr><td colSpan={7} className="px-4 py-6 text-center text-zinc-500">Nenhuma transação registrada.</td></tr>
+            <tr><td colSpan={7} className="px-4 py-6 text-center text-zinc-600">Nenhuma transação registrada.</td></tr>
           )}
           {transactions.map(tx => (
-            <tr key={tx.id} className="border-b last:border-0 hover:bg-zinc-50 transition-colors">
-              <td className="px-4 py-3 text-zinc-500 text-xs">{formatDate(tx.date)}</td>
+            <tr key={tx.id} className="border-b border-zinc-200/60 last:border-0 hover:bg-green-50/40 transition-colors">
+              <td className="px-4 py-3 text-zinc-700 text-xs">{formatDate(tx.date)}</td>
               <td className="px-4 py-3">
-                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${
                   tx.operation === 'BUY'
                     ? 'bg-green-100 text-green-700'
                     : 'bg-red-100 text-red-600'
@@ -81,11 +81,11 @@ export function TransactionList() {
                   {tx.operation === 'BUY' ? 'Compra' : 'Venda'}
                 </span>
               </td>
-              <td className="px-4 py-3 font-medium text-zinc-900">{tx.ticker}</td>
-              <td className="px-4 py-3 text-zinc-500">{TYPE_LABELS[tx.type] ?? tx.type}</td>
+              <td className="px-4 py-3 font-semibold text-zinc-900">{tx.ticker}</td>
+              <td className="px-4 py-3 text-zinc-700">{TYPE_LABELS[tx.type] ?? tx.type}</td>
               <td className="px-4 py-3 text-zinc-700">{tx.quantity}</td>
               <td className="px-4 py-3 text-zinc-700">{formatBRL(tx.price)}</td>
-              <td className="px-4 py-3 font-medium text-zinc-900">{formatBRL(tx.price * tx.quantity)}</td>
+              <td className="px-4 py-3 font-semibold text-zinc-900">{formatBRL(tx.price * tx.quantity)}</td>
             </tr>
           ))}
         </tbody>

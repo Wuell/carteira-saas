@@ -148,41 +148,41 @@ export function AssetAboutModal({ item, onClose }: { item: ModalItem; onClose: (
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden"
+        className="bg-white rounded-2xl shadow-xl border border-zinc-200/60 w-full max-w-md mx-4 overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-200/60">
           <div>
-            <p className="text-lg font-bold text-zinc-900">
+            <p className="text-lg font-extrabold text-zinc-900">
               {isAsset ? asset!.ticker : fixed!.name}
             </p>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-zinc-600">
               {isAsset ? (TYPE_LABELS[asset!.type] ?? asset!.type) : (fixed!.subType === 'tesouro' ? 'Tesouro Direto' : 'CDB / LCI / LCA')}
             </p>
           </div>
-          <button onClick={onClose} className="text-zinc-400 hover:text-zinc-700 text-xl leading-none">×</button>
+          <button onClick={onClose} className="text-zinc-500 hover:text-zinc-700 text-xl leading-none">×</button>
         </div>
 
         {/* Métricas */}
-        <div className="grid grid-cols-3 divide-x border-b">
+        <div className="grid grid-cols-3 divide-x divide-zinc-200/60 border-b border-zinc-200/60">
           <div className="px-4 py-3 text-center">
-            <p className="text-xs text-zinc-500">Valor atual</p>
-            <p className="text-sm font-semibold text-zinc-900">{formatBRL(currentValue)}</p>
+            <p className="text-xs text-zinc-600">Valor atual</p>
+            <p className="text-sm font-bold text-zinc-900">{formatBRL(currentValue)}</p>
           </div>
           <div className="px-4 py-3 text-center">
-            <p className="text-xs text-zinc-500">{isAsset ? 'Preço médio' : 'Investido'}</p>
-            <p className="text-sm font-semibold text-zinc-900">
+            <p className="text-xs text-zinc-600">{isAsset ? 'Preço médio' : 'Investido'}</p>
+            <p className="text-sm font-bold text-zinc-900">
               {isAsset ? formatBRL(asset!.avgPrice) : formatBRL(investedValue)}
             </p>
           </div>
           <div className="px-4 py-3 text-center">
-            <p className="text-xs text-zinc-500">P&L</p>
-            <p className={`text-sm font-semibold ${positive ? 'text-green-600' : 'text-red-500'}`}>
+            <p className="text-xs text-zinc-600">P&L</p>
+            <p className={`text-sm font-bold ${positive ? 'text-green-600' : 'text-red-500'}`}>
               {positive ? '+' : ''}{returnPct.toFixed(2)}%
             </p>
           </div>
@@ -191,11 +191,11 @@ export function AssetAboutModal({ item, onClose }: { item: ModalItem; onClose: (
         {/* Sobre */}
         <div className="px-6 py-5 space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-zinc-900">Sobre</p>
+            <p className="text-sm font-bold text-zinc-900">Sobre</p>
             {!editing && (
               <button
                 onClick={() => setEditing(true)}
-                className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                className="text-xs text-green-600 hover:text-green-700 font-bold"
               >
                 Editar
               </button>
@@ -211,13 +211,13 @@ export function AssetAboutModal({ item, onClose }: { item: ModalItem; onClose: (
                     value={field1Val}
                     onChange={e => setField1Val(e.target.value)}
                     placeholder={fieldConfig.field1.placeholder}
-                    className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:border-green-500 focus:ring-green-500/20"
                   />
                   {fieldConfig.field1.suggestions.length > 0 && (
                     <div className="mt-1 flex flex-wrap gap-1">
                       {fieldConfig.field1.suggestions.map(s => (
                         <button key={s} type="button" onClick={() => setField1Val(s)}
-                          className="rounded-full border border-zinc-200 px-2 py-0.5 text-xs text-zinc-500 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
+                          className="rounded-full border border-zinc-300 px-2.5 py-0.5 text-xs text-zinc-700 hover:border-green-500 hover:text-green-600 transition-colors">
                           {s}
                         </button>
                       ))}
@@ -233,13 +233,13 @@ export function AssetAboutModal({ item, onClose }: { item: ModalItem; onClose: (
                     value={field2Val}
                     onChange={e => setField2Val(e.target.value)}
                     placeholder={fieldConfig.field2.placeholder}
-                    className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:border-green-500 focus:ring-green-500/20"
                   />
                   {fieldConfig.field2.suggestions.length > 0 && (
                     <div className="mt-1 flex flex-wrap gap-1">
                       {fieldConfig.field2.suggestions.map(s => (
                         <button key={s} type="button" onClick={() => setField2Val(s)}
-                          className="rounded-full border border-zinc-200 px-2 py-0.5 text-xs text-zinc-500 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
+                          className="rounded-full border border-zinc-300 px-2.5 py-0.5 text-xs text-zinc-700 hover:border-green-500 hover:text-green-600 transition-colors">
                           {s}
                         </button>
                       ))}
@@ -255,17 +255,17 @@ export function AssetAboutModal({ item, onClose }: { item: ModalItem; onClose: (
                   onChange={e => setNotes(e.target.value)}
                   rows={3}
                   placeholder={notesPlaceholder}
-                  className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                  className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:border-green-500 focus:ring-green-500/20 resize-none"
                 />
               </div>
 
               <div className="flex gap-2 pt-1">
                 <button onClick={handleSave} disabled={isPending}
-                  className="flex-1 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60 transition-colors">
+                  className="flex-1 rounded-full bg-green-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-green-600 disabled:opacity-60 transition-colors">
                   {isPending ? 'Salvando...' : 'Salvar'}
                 </button>
                 <button onClick={handleCancel}
-                  className="flex-1 rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-50 transition-colors">
+                  className="flex-1 rounded-full border-2 border-zinc-300 px-5 py-2 text-sm font-medium text-zinc-700 hover:border-green-500 hover:text-green-600 transition-colors">
                   Cancelar
                 </button>
               </div>

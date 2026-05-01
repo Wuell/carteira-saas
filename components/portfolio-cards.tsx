@@ -31,7 +31,7 @@ export function PortfolioCards() {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[...Array(3)].map((_, i) => (
-          <div key={i} className="rounded-xl border bg-white p-6 animate-pulse h-28" />
+          <div key={i} className="rounded-2xl border border-zinc-200/60 bg-white p-8 animate-pulse h-32" />
         ))}
       </div>
     )
@@ -42,26 +42,26 @@ export function PortfolioCards() {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <div className="rounded-xl border bg-white p-6 shadow-sm">
-        <p className="text-sm text-zinc-500">Patrimônio total</p>
-        <p className="mt-2 text-2xl font-semibold text-zinc-900">
+      <div className="rounded-2xl border border-zinc-200/60 bg-white p-8 shadow-sm hover:shadow-md transition-shadow">
+        <p className="text-sm font-medium text-zinc-600">Patrimônio total</p>
+        <p className="mt-2 text-3xl font-extrabold text-zinc-900">
           {formatBRL(data?.totalValue ?? 0)}
         </p>
       </div>
 
-      <div className="rounded-xl border bg-white p-6 shadow-sm">
-        <p className="text-sm text-zinc-500">Rentabilidade</p>
-        <p className={`mt-2 text-2xl font-semibold ${positive ? 'text-green-600' : 'text-red-500'}`}>
+      <div className="rounded-2xl border border-zinc-200/60 bg-white p-8 shadow-sm hover:shadow-md transition-shadow">
+        <p className="text-sm font-medium text-zinc-600">Rentabilidade</p>
+        <p className={`mt-2 text-3xl font-extrabold ${positive ? 'text-green-600' : 'text-red-500'}`}>
           {positive ? '+' : ''}{(data?.returnPct ?? 0).toFixed(2)}%
         </p>
-        <p className="text-xs text-zinc-500 mt-1">
+        <p className="text-xs text-zinc-600 mt-1">
           Investido: {formatBRL(data?.totalInvested ?? 0)}
         </p>
       </div>
 
-      <div className="rounded-xl border bg-white p-6 shadow-sm">
-        <p className="text-sm text-zinc-500">Posições na carteira</p>
-        <p className="mt-2 text-2xl font-semibold text-zinc-900">{totalPositions}</p>
+      <div className="rounded-2xl border border-zinc-200/60 bg-white p-8 shadow-sm hover:shadow-md transition-shadow">
+        <p className="text-sm font-medium text-zinc-600">Posições na carteira</p>
+        <p className="mt-2 text-3xl font-extrabold text-zinc-900">{totalPositions}</p>
       </div>
     </div>
   )

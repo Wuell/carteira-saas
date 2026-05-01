@@ -5,8 +5,10 @@ export default function TransacoesPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold text-zinc-900">Transações</h1>
-        <p className="text-sm text-zinc-500 mt-1">Registre compras e vendas da sua carteira</p>
+        <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900">
+          <span className="text-green-600">Transações</span>
+        </h1>
+        <p className="text-sm font-medium text-zinc-700 mt-1">Registre compras e vendas da sua carteira</p>
       </div>
       <AssetManager />
       <TransactionList />

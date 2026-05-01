@@ -90,35 +90,35 @@ function FilterPanel({
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
-        className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors ${activeCount > 0 ? 'border-zinc-900 bg-zinc-900 text-white' : 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300'}`}
+        className={`flex items-center gap-2 rounded-full border-2 px-4 py-2 text-sm font-medium transition-colors ${activeCount > 0 ? 'border-green-500 bg-green-500 text-white' : 'border-zinc-300 bg-white text-zinc-700 hover:border-green-500 hover:text-green-600'}`}
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
         </svg>
         Filtros
         {activeCount > 0 && (
-          <span className="rounded-full bg-white text-zinc-900 text-xs w-4 h-4 flex items-center justify-center font-bold">
+          <span className="rounded-full bg-white text-green-600 text-xs w-4 h-4 flex items-center justify-center font-bold">
             {activeCount}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 top-10 z-20 w-64 rounded-xl border bg-white shadow-lg p-4 flex flex-col gap-3">
+        <div className="absolute right-0 top-12 z-20 w-64 rounded-2xl border border-zinc-200/60 bg-white shadow-lg p-4 flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-zinc-900">Filtros</p>
+            <p className="text-sm font-bold text-zinc-900">Filtros</p>
             {activeCount > 0 && (
               <button type="button" onClick={() => { onClear(); setOpen(false) }}
-                className="text-xs text-zinc-400 hover:text-zinc-700">
+                className="text-xs font-medium text-zinc-600 hover:text-green-600">
                 Limpar
               </button>
             )}
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-zinc-500">Mês</label>
+            <label className="text-xs font-medium text-zinc-700">Mês</label>
             <select
-              className="rounded-lg border px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+              className="rounded-lg border-2 border-zinc-300 px-4 py-2.5 text-sm text-zinc-900 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20"
               value={filters.month}
               onChange={e => onChange({ ...filters, month: e.target.value })}
             >
@@ -130,9 +130,9 @@ function FilterPanel({
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-zinc-500">Ticker</label>
+            <label className="text-xs font-medium text-zinc-700">Ticker</label>
             <select
-              className="rounded-lg border px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+              className="rounded-lg border-2 border-zinc-300 px-4 py-2.5 text-sm text-zinc-900 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20"
               value={filters.ticker}
               onChange={e => onChange({ ...filters, ticker: e.target.value })}
             >
@@ -144,7 +144,7 @@ function FilterPanel({
           </div>
 
           <button type="button" onClick={() => setOpen(false)}
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700">
+            className="rounded-full bg-green-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-green-600 transition-colors">
             Aplicar
           </button>
         </div>
@@ -248,42 +248,42 @@ export function DividendManager() {
     <div className="flex flex-col gap-6">
       {/* Cards resumo */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="rounded-xl border bg-white p-6 shadow-sm">
-          <p className="text-sm text-zinc-500">Total recebido</p>
-          <p className="mt-2 text-2xl font-semibold text-zinc-900">{formatBRL(totalReceived)}</p>
+        <div className="rounded-2xl border border-zinc-200/60 bg-white p-8 shadow-sm hover:shadow-md transition-shadow">
+          <p className="text-sm font-medium text-zinc-600">Total recebido</p>
+          <p className="mt-2 text-3xl font-extrabold text-zinc-900">{formatBRL(totalReceived)}</p>
         </div>
-        <div className="rounded-xl border bg-white p-6 shadow-sm">
-          <p className="text-sm text-zinc-500">Último mês</p>
-          <p className="mt-2 text-2xl font-semibold text-green-600">
+        <div className="rounded-2xl border border-zinc-200/60 bg-white p-8 shadow-sm hover:shadow-md transition-shadow">
+          <p className="text-sm font-medium text-zinc-600">Último mês</p>
+          <p className="mt-2 text-3xl font-extrabold text-green-600">
             {formatBRL(monthSummary[0]?.total ?? 0)}
           </p>
           {monthSummary[0] && (
-            <p className="text-xs text-zinc-500 mt-1">{monthLabel(monthSummary[0].key)}</p>
+            <p className="text-xs text-zinc-600 mt-1">{monthLabel(monthSummary[0].key)}</p>
           )}
         </div>
-        <div className="rounded-xl border bg-white p-6 shadow-sm">
-          <p className="text-sm text-zinc-500">Registros</p>
-          <p className="mt-2 text-2xl font-semibold text-zinc-900">{dividends.length}</p>
+        <div className="rounded-2xl border border-zinc-200/60 bg-white p-8 shadow-sm hover:shadow-md transition-shadow">
+          <p className="text-sm font-medium text-zinc-600">Registros</p>
+          <p className="mt-2 text-3xl font-extrabold text-zinc-900">{dividends.length}</p>
         </div>
       </div>
 
       {/* Resumo por mês */}
       {monthSummary.length > 0 && (
-        <div className="rounded-xl border bg-white p-6 shadow-sm">
-          <p className="text-sm font-semibold text-zinc-900 mb-4">Recebido por mês</p>
+        <div className="rounded-2xl border border-zinc-200/60 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
+          <p className="text-base font-bold text-zinc-900 mb-4">Recebido por mês</p>
           <div className="flex flex-col gap-2">
             {monthSummary.map(({ key, total }) => {
               const maxTotal = Math.max(...monthSummary.map(m => m.total))
               const pct = maxTotal > 0 ? (total / maxTotal) * 100 : 0
               return (
                 <div key={key} className="flex items-center gap-3">
-                  <span className="w-32 text-xs text-zinc-500 shrink-0">
+                  <span className="w-32 text-xs font-medium text-zinc-700 shrink-0">
                     {monthLabel(key)}
                   </span>
                   <div className="flex-1 bg-zinc-100 rounded-full h-2 overflow-hidden">
                     <div className="bg-green-500 h-2 rounded-full transition-all" style={{ width: `${pct}%` }} />
                   </div>
-                  <span className="w-24 text-xs font-medium text-zinc-900 text-right shrink-0">
+                  <span className="w-24 text-xs font-semibold text-zinc-900 text-right shrink-0">
                     {formatBRL(total)}
                   </span>
                 </div>
@@ -295,14 +295,14 @@ export function DividendManager() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Formulário */}
-        <div className="rounded-xl border bg-white p-6 shadow-sm flex flex-col gap-4">
-          <h2 className="text-base font-semibold text-zinc-900">Registrar provento</h2>
+        <div className="rounded-2xl border border-zinc-200/60 bg-white p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col gap-4">
+          <h2 className="text-base font-bold text-zinc-900">Registrar provento</h2>
           {error && <p className="text-sm text-red-500">{error}</p>}
           <form onSubmit={handleSubmit} className="flex flex-col gap-3">
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-zinc-500">Ticker</label>
+              <label className="text-xs font-medium text-zinc-700">Ticker</label>
               <select
-                className="rounded-lg border px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                className="rounded-lg border-2 border-zinc-300 px-4 py-2.5 text-sm text-zinc-900 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20"
                 value={form.ticker}
                 onChange={e => handleTickerSelect(e.target.value)}
               >
@@ -317,17 +317,17 @@ export function DividendManager() {
                 ))}
               </select>
               {form.type && (
-                <p className="text-xs font-medium text-zinc-600">
+                <p className="text-xs font-medium text-zinc-700">
                   {TYPE_LABELS[form.type] ?? form.type}
                 </p>
               )}
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-zinc-500">Valor recebido (R$)</label>
+              <label className="text-xs font-medium text-zinc-700">Valor recebido (R$)</label>
               <input
                 type="number" step="0.01"
-                className="rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                className="rounded-lg border-2 border-zinc-300 px-4 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20"
                 placeholder="ex: 12.50"
                 value={form.amount}
                 onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}
@@ -335,29 +335,29 @@ export function DividendManager() {
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-zinc-500">Data de pagamento</label>
+              <label className="text-xs font-medium text-zinc-700">Data de pagamento</label>
               <input
                 type="date"
-                className="rounded-lg border px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                className="rounded-lg border-2 border-zinc-300 px-4 py-2.5 text-sm text-zinc-900 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20"
                 value={form.paidAt}
                 onChange={e => setForm(f => ({ ...f, paidAt: e.target.value }))}
               />
             </div>
 
             <button type="submit" disabled={addMutation.isPending}
-              className="rounded-lg bg-green-600 px-5 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50 transition-colors">
+              className="rounded-full bg-green-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-green-600 disabled:opacity-50 transition-colors">
               {addMutation.isPending ? 'Registrando...' : 'Registrar'}
             </button>
           </form>
         </div>
 
         {/* Histórico */}
-        <div className="lg:col-span-2 rounded-xl border bg-white shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b flex items-center justify-between gap-3">
+        <div className="lg:col-span-2 rounded-2xl border border-zinc-200/60 bg-white shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+          <div className="px-6 py-4 border-b border-zinc-200/60 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <p className="text-sm font-semibold text-zinc-900">Histórico</p>
+              <p className="text-base font-bold text-zinc-900">Histórico</p>
               {hasFilter && (
-                <span className="text-xs text-zinc-500">
+                <span className="text-xs text-zinc-600">
                   {filtered.length} resultado{filtered.length !== 1 ? 's' : ''} · {formatBRL(filteredTotal)}
                 </span>
               )}
@@ -366,7 +366,7 @@ export function DividendManager() {
               <button
                 disabled={!selectedDividendId || deleteMutation.isPending}
                 onClick={() => { if (selectedDividendId) { deleteMutation.mutate(selectedDividendId); setSelectedDividendId(null) } }}
-                className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="rounded-lg border-2 border-red-200 px-3 py-1.5 text-xs font-bold text-red-500 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >Remover</button>
               <FilterPanel
                 filters={filters}
@@ -380,7 +380,7 @@ export function DividendManager() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b bg-zinc-50 text-left text-xs text-zinc-500 uppercase tracking-wider">
+                <tr className="border-b border-zinc-200/60 bg-zinc-50 text-left text-xs text-zinc-600 uppercase tracking-wider">
                   <th className="px-4 py-3">Ticker</th>
                   <th className="px-4 py-3">Tipo</th>
                   <th className="px-4 py-3">Data</th>
@@ -389,11 +389,11 @@ export function DividendManager() {
               </thead>
               <tbody>
                 {isLoading && (
-                  <tr><td colSpan={4} className="px-4 py-6 text-center text-zinc-500">Carregando...</td></tr>
+                  <tr><td colSpan={4} className="px-4 py-6 text-center text-zinc-600">Carregando...</td></tr>
                 )}
                 {!isLoading && filtered.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="px-4 py-6 text-center text-zinc-500">
+                    <td colSpan={4} className="px-4 py-6 text-center text-zinc-600">
                       {hasFilter ? 'Nenhum resultado para os filtros selecionados.' : 'Nenhum provento registrado.'}
                     </td>
                   </tr>
@@ -404,12 +404,12 @@ export function DividendManager() {
                     <tr
                       key={d.id}
                       onClick={() => setSelectedDividendId(id => id === d.id ? null : d.id)}
-                      className={`border-b last:border-0 cursor-pointer transition-colors ${selected ? 'bg-blue-50' : 'hover:bg-zinc-50'}`}
+                      className={`border-b border-zinc-200/60 last:border-0 cursor-pointer transition-colors ${selected ? 'bg-green-100/60' : 'hover:bg-green-50/40'}`}
                     >
-                      <td className="px-4 py-3 font-medium text-zinc-900">{d.ticker}</td>
-                      <td className="px-4 py-3 text-zinc-500">{TYPE_LABELS[d.type] ?? d.type}</td>
-                      <td className="px-4 py-3 text-zinc-500">{formatDate(d.paidAt)}</td>
-                      <td className="px-4 py-3 font-medium text-green-600">{formatBRL(d.amount)}</td>
+                      <td className="px-4 py-3 font-semibold text-zinc-900">{d.ticker}</td>
+                      <td className="px-4 py-3 text-zinc-700">{TYPE_LABELS[d.type] ?? d.type}</td>
+                      <td className="px-4 py-3 text-zinc-700">{formatDate(d.paidAt)}</td>
+                      <td className="px-4 py-3 font-semibold text-green-600">{formatBRL(d.amount)}</td>
                     </tr>
                   )
                 })}
