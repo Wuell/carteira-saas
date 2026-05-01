@@ -10,7 +10,15 @@ import {
   Cell,
   ResponsiveContainer,
 } from 'recharts'
-import { inferSector, FII_SECTORS, STOCK_SECTORS } from '@/lib/sector-inference'
+import {
+  inferSector,
+  inferFundType,
+  inferStockSegment,
+  FII_SECTORS,
+  STOCK_SECTORS,
+  FII_FUND_TYPES,
+  STOCK_SEGMENTS,
+} from '@/lib/sector-inference'
 
 function IconPencil() {
   return (
@@ -65,6 +73,8 @@ type EnrichedAsset = AssetFromApi & {
   currentValue: number
   investedValue: number
   resolvedSector: string
+  fundType: string
+  stockSegment: string
 }
 
 // ——— Helpers ———
@@ -80,8 +90,20 @@ const SECTOR_COLORS = [
   '#34d399', '#2dd4bf', '#c084fc',
 ]
 
+// Second palette offset for fund type chart
+const FUND_TYPE_COLORS = [
+  '#f59e0b', '#fbbf24', '#f43f5e', '#fb7185',
+  '#a78bfa', '#818cf8', '#34d399', '#2dd4bf',
+  '#0ea5e9', '#38bdf8', '#16a34a', '#22c55e',
+  '#c084fc', '#4ade80', '#86efac',
+]
+
 function sectorColor(index: number): string {
   return SECTOR_COLORS[index % SECTOR_COLORS.length]
+}
+
+function fundTypeColor(index: number): string {
+  return FUND_TYPE_COLORS[index % FUND_TYPE_COLORS.length]
 }
 
 // ——— Fetch functions (shared queryKey pattern) ———
@@ -98,30 +120,38 @@ async function fetchPortfolio(): Promise<Portfolio> {
   return res.json()
 }
 
-// ——— Inline sector editor ———
+// ——— Inline editor (sector or assetSubType) ———
 
 function SectorEditor({
   assetId,
-  currentSector,
+  currentValue,
   options,
+  field,
+  placeholder,
   onDone,
 }: {
   assetId: string
-  currentSector: string
+  currentValue: string
   options: string[]
+  field: 'sector' | 'assetSubType'
+  placeholder: string
   onDone: () => void
 }) {
   const queryClient = useQueryClient()
-  const [value, setValue] = useState(currentSector === 'Sem setor' ? '' : currentSector)
+  const [value, setValue] = useState(
+    currentValue === 'Sem setor' || currentValue === 'Não definido' ? '' : currentValue
+  )
 
   const mutation = useMutation({
-    mutationFn: async (sector: string) => {
+    mutationFn: async (val: string) => {
+      const body: Record<string, string> = { id: assetId }
+      body[field] = val
       const res = await fetch('/api/assets', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: assetId, sector }),
+        body: JSON.stringify(body),
       })
-      if (!res.ok) throw new Error('Falha ao salvar setor')
+      if (!res.ok) throw new Error('Falha ao salvar')
       return res.json()
     },
     onSuccess: () => {
@@ -139,7 +169,7 @@ function SectorEditor({
         className="rounded border border-zinc-300 bg-white px-2 py-0.5 text-xs text-zinc-900 focus:outline-none focus:ring-1 focus:ring-green-500"
         autoFocus
       >
-        <option value="">Sem setor</option>
+        <option value="">{placeholder}</option>
         {options.map(s => (
           <option key={s} value={s}>{s}</option>
         ))}
@@ -219,20 +249,19 @@ function SectorBarChart({ groups }: { groups: SectorGroup[] }) {
   )
 }
 
-// ——— Asset table for a tab ———
+// ——— FII table with Segmento + Tipo de Fundo columns ———
 
-function AssetTabTable({
+function FiiTabTable({
   assets,
-  sectorOptions,
   totalValue,
 }: {
   assets: EnrichedAsset[]
-  sectorOptions: string[]
   totalValue: number
 }) {
+  // editingKey format: `${assetId}:sector` or `${assetId}:fundType`
   const [editing, setEditing] = useState<string | null>(null)
 
-  // Group by sector
+  // Group by resolvedSector
   const grouped = new Map<string, EnrichedAsset[]>()
   for (const a of assets) {
     const list = grouped.get(a.resolvedSector) ?? []
@@ -240,7 +269,199 @@ function AssetTabTable({
     grouped.set(a.resolvedSector, list)
   }
 
-  // Sort sectors by total value desc; "Sem setor" always last
+  const sectors = [...grouped.entries()].sort((a, b) => {
+    if (a[0] === 'Sem setor') return 1
+    if (b[0] === 'Sem setor') return -1
+    const sumA = a[1].reduce((s, x) => s + x.currentValue, 0)
+    const sumB = b[1].reduce((s, x) => s + x.currentValue, 0)
+    return sumB - sumA
+  })
+
+  if (sectors.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-10 text-sm text-zinc-600">
+        Nenhum ativo nesta categoria.
+      </div>
+    )
+  }
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-zinc-200/60 bg-zinc-50 text-left text-xs text-zinc-600 uppercase tracking-wider">
+            <th className="px-4 py-3">Ticker</th>
+            <th className="px-4 py-3">Segmento</th>
+            <th className="px-4 py-3">Tipo de Fundo</th>
+            <th className="px-4 py-3">Valor Investido</th>
+            <th className="px-4 py-3">Valor Atual</th>
+            <th className="px-4 py-3">%</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sectors.map(([sector, items]) => {
+            const sectorValue = items.reduce((s, a) => s + a.currentValue, 0)
+            const sectorPct = totalValue > 0 ? (sectorValue / totalValue) * 100 : 0
+            const isMissing = sector === 'Sem setor'
+            const isHighConcentration = sectorPct > 40
+            const isModerateConcentration = sectorPct > 30 && !isHighConcentration
+
+            return items.map((asset, rowIdx) => {
+              const assetPct = totalValue > 0 ? (asset.currentValue / totalValue) * 100 : 0
+              const isFirstInGroup = rowIdx === 0
+              const sectorKey = `${asset.id}:sector`
+              const fundTypeKey = `${asset.id}:fundType`
+              const isFundTypeUndefined = asset.fundType === 'Não definido'
+
+              return (
+                <tr
+                  key={asset.id}
+                  className={`border-b border-zinc-200/60 last:border-0 transition-colors ${
+                    isMissing
+                      ? 'bg-yellow-50/60 hover:bg-yellow-50'
+                      : 'hover:bg-green-50/40'
+                  }`}
+                >
+                  {/* Ticker */}
+                  <td className="px-4 py-3 font-semibold text-zinc-900">
+                    {asset.ticker}
+                  </td>
+
+                  {/* Segmento */}
+                  <td className="px-4 py-3">
+                    {isFirstInGroup ? (
+                      <span className="flex items-center gap-2 flex-wrap">
+                        {editing === sectorKey ? (
+                          <SectorEditor
+                            assetId={asset.id}
+                            currentValue={asset.resolvedSector}
+                            options={FII_SECTORS}
+                            field="sector"
+                            placeholder="Sem segmento"
+                            onDone={() => setEditing(null)}
+                          />
+                        ) : (
+                          <>
+                            <span
+                              className={`font-medium ${
+                                isMissing ? 'text-yellow-700' : 'text-zinc-700'
+                              }`}
+                            >
+                              {sector}
+                            </span>
+                            {isHighConcentration && (
+                              <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-600">
+                                {sectorPct.toFixed(0)}% — Alta
+                              </span>
+                            )}
+                            {isModerateConcentration && (
+                              <span className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-semibold text-orange-700">
+                                {sectorPct.toFixed(0)}% — Atenção
+                              </span>
+                            )}
+                            <button
+                              onClick={() => setEditing(sectorKey)}
+                              className="rounded p-0.5 text-zinc-400 hover:text-green-600 hover:bg-green-50 transition-colors"
+                              title="Editar segmento"
+                            >
+                              <IconPencil />
+                            </button>
+                          </>
+                        )}
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1">
+                        {editing === sectorKey ? (
+                          <SectorEditor
+                            assetId={asset.id}
+                            currentValue={asset.resolvedSector}
+                            options={FII_SECTORS}
+                            field="sector"
+                            placeholder="Sem segmento"
+                            onDone={() => setEditing(null)}
+                          />
+                        ) : (
+                          <>
+                            <span className="text-zinc-500 text-xs">—</span>
+                            <button
+                              onClick={() => setEditing(sectorKey)}
+                              className="rounded p-0.5 text-zinc-400 hover:text-green-600 hover:bg-green-50 transition-colors"
+                              title="Editar segmento"
+                            >
+                              <IconPencil />
+                            </button>
+                          </>
+                        )}
+                      </span>
+                    )}
+                  </td>
+
+                  {/* Tipo de Fundo */}
+                  <td className="px-4 py-3">
+                    <span className="flex items-center gap-1">
+                      {editing === fundTypeKey ? (
+                        <SectorEditor
+                          assetId={asset.id}
+                          currentValue={asset.fundType}
+                          options={FII_FUND_TYPES}
+                          field="assetSubType"
+                          placeholder="Não definido"
+                          onDone={() => setEditing(null)}
+                        />
+                      ) : (
+                        <>
+                          <span
+                            className={`text-sm ${
+                              isFundTypeUndefined ? 'text-yellow-700' : 'text-zinc-700'
+                            }`}
+                          >
+                            {asset.fundType}
+                          </span>
+                          <button
+                            onClick={() => setEditing(fundTypeKey)}
+                            className="rounded p-0.5 text-zinc-400 hover:text-green-600 hover:bg-green-50 transition-colors"
+                            title="Editar tipo de fundo"
+                          >
+                            <IconPencil />
+                          </button>
+                        </>
+                      )}
+                    </span>
+                  </td>
+
+                  <td className="px-4 py-3 text-zinc-700">{formatBRL(asset.investedValue)}</td>
+                  <td className="px-4 py-3 text-zinc-900 font-medium">{formatBRL(asset.currentValue)}</td>
+                  <td className="px-4 py-3 text-zinc-700">{assetPct.toFixed(1)}%</td>
+                </tr>
+              )
+            })
+          })}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+// ——— Stock table with Setor + Segmento columns ———
+
+function StockTabTable({
+  assets,
+  totalValue,
+}: {
+  assets: EnrichedAsset[]
+  totalValue: number
+}) {
+  // editingKey format: `${assetId}:sector` or `${assetId}:segment`
+  const [editing, setEditing] = useState<string | null>(null)
+
+  // Group by resolvedSector
+  const grouped = new Map<string, EnrichedAsset[]>()
+  for (const a of assets) {
+    const list = grouped.get(a.resolvedSector) ?? []
+    list.push(a)
+    grouped.set(a.resolvedSector, list)
+  }
+
   const sectors = [...grouped.entries()].sort((a, b) => {
     if (a[0] === 'Sem setor') return 1
     if (b[0] === 'Sem setor') return -1
@@ -264,6 +485,7 @@ function AssetTabTable({
           <tr className="border-b border-zinc-200/60 bg-zinc-50 text-left text-xs text-zinc-600 uppercase tracking-wider">
             <th className="px-4 py-3">Ticker</th>
             <th className="px-4 py-3">Setor</th>
+            <th className="px-4 py-3">Segmento</th>
             <th className="px-4 py-3">Valor Investido</th>
             <th className="px-4 py-3">Valor Atual</th>
             <th className="px-4 py-3">%</th>
@@ -280,6 +502,9 @@ function AssetTabTable({
             return items.map((asset, rowIdx) => {
               const assetPct = totalValue > 0 ? (asset.currentValue / totalValue) * 100 : 0
               const isFirstInGroup = rowIdx === 0
+              const sectorKey = `${asset.id}:sector`
+              const segmentKey = `${asset.id}:segment`
+              const isSegmentUndefined = asset.stockSegment === 'Não definido'
 
               return (
                 <tr
@@ -295,15 +520,17 @@ function AssetTabTable({
                     {asset.ticker}
                   </td>
 
-                  {/* Sector cell — first row shows name + badges + edit; rest show edit only */}
+                  {/* Setor */}
                   <td className="px-4 py-3">
                     {isFirstInGroup ? (
                       <span className="flex items-center gap-2 flex-wrap">
-                        {editing === asset.id ? (
+                        {editing === sectorKey ? (
                           <SectorEditor
                             assetId={asset.id}
-                            currentSector={asset.resolvedSector}
-                            options={sectorOptions}
+                            currentValue={asset.resolvedSector}
+                            options={STOCK_SECTORS}
+                            field="sector"
+                            placeholder="Sem setor"
                             onDone={() => setEditing(null)}
                           />
                         ) : (
@@ -326,7 +553,7 @@ function AssetTabTable({
                               </span>
                             )}
                             <button
-                              onClick={() => setEditing(asset.id)}
+                              onClick={() => setEditing(sectorKey)}
                               className="rounded p-0.5 text-zinc-400 hover:text-green-600 hover:bg-green-50 transition-colors"
                               title="Editar setor"
                             >
@@ -337,18 +564,20 @@ function AssetTabTable({
                       </span>
                     ) : (
                       <span className="flex items-center gap-1">
-                        {editing === asset.id ? (
+                        {editing === sectorKey ? (
                           <SectorEditor
                             assetId={asset.id}
-                            currentSector={asset.resolvedSector}
-                            options={sectorOptions}
+                            currentValue={asset.resolvedSector}
+                            options={STOCK_SECTORS}
+                            field="sector"
+                            placeholder="Sem setor"
                             onDone={() => setEditing(null)}
                           />
                         ) : (
                           <>
                             <span className="text-zinc-500 text-xs">—</span>
                             <button
-                              onClick={() => setEditing(asset.id)}
+                              onClick={() => setEditing(sectorKey)}
                               className="rounded p-0.5 text-zinc-400 hover:text-green-600 hover:bg-green-50 transition-colors"
                               title="Editar setor"
                             >
@@ -358,6 +587,39 @@ function AssetTabTable({
                         )}
                       </span>
                     )}
+                  </td>
+
+                  {/* Segmento */}
+                  <td className="px-4 py-3">
+                    <span className="flex items-center gap-1">
+                      {editing === segmentKey ? (
+                        <SectorEditor
+                          assetId={asset.id}
+                          currentValue={asset.stockSegment}
+                          options={STOCK_SEGMENTS}
+                          field="assetSubType"
+                          placeholder="Não definido"
+                          onDone={() => setEditing(null)}
+                        />
+                      ) : (
+                        <>
+                          <span
+                            className={`text-sm ${
+                              isSegmentUndefined ? 'text-yellow-700' : 'text-zinc-700'
+                            }`}
+                          >
+                            {asset.stockSegment}
+                          </span>
+                          <button
+                            onClick={() => setEditing(segmentKey)}
+                            className="rounded p-0.5 text-zinc-400 hover:text-green-600 hover:bg-green-50 transition-colors"
+                            title="Editar segmento"
+                          >
+                            <IconPencil />
+                          </button>
+                        </>
+                      )}
+                    </span>
                   </td>
 
                   <td className="px-4 py-3 text-zinc-700">{formatBRL(asset.investedValue)}</td>
@@ -408,7 +670,7 @@ export function Diversificacao() {
     currentValueMap.set(a.ticker, a.currentValue)
   }
 
-  // Enrich assets: merge currentValue + resolve sector
+  // Enrich assets: merge currentValue + resolve sector + fund type + stock segment
   const enriched: EnrichedAsset[] = (assetsData ?? []).map(asset => {
     const investedValue = asset.avgPrice * asset.quantity
     const currentValue = currentValueMap.get(asset.ticker) ?? investedValue
@@ -416,15 +678,15 @@ export function Diversificacao() {
       asset.sector?.trim() ||
       inferSector(asset.ticker) ||
       'Sem setor'
-    return { ...asset, currentValue, investedValue, resolvedSector }
+    const fundType = inferFundType(asset.ticker) || asset.assetSubType || 'Não definido'
+    const stockSegment = inferStockSegment(asset.ticker) || asset.assetSubType || 'Não definido'
+    return { ...asset, currentValue, investedValue, resolvedSector, fundType, stockSegment }
   })
 
   const fiis = enriched.filter(a => a.type === 'fii')
   const stocks = enriched.filter(a => a.type === 'stock_br')
 
   const activeAssets = tab === 'fii' ? fiis : stocks
-  const sectorOptions = tab === 'fii' ? FII_SECTORS : STOCK_SECTORS
-
   const totalValue = activeAssets.reduce((s, a) => s + a.currentValue, 0)
 
   // Build sector groups for chart
@@ -441,6 +703,23 @@ export function Diversificacao() {
       value,
       pct: totalValue > 0 ? (value / totalValue) * 100 : 0,
       color: sectorColor(index),
+    }))
+
+  // Build fund type groups (FII only)
+  const fundTypeMap = new Map<string, number>()
+  for (const a of fiis) {
+    if (a.fundType !== 'Não definido') {
+      fundTypeMap.set(a.fundType, (fundTypeMap.get(a.fundType) ?? 0) + a.currentValue)
+    }
+  }
+  const fiiTotalValue = fiis.reduce((s, a) => s + a.currentValue, 0)
+  const fundTypeGroups: SectorGroup[] = [...fundTypeMap.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([sector, value], index) => ({
+      sector,
+      value,
+      pct: fiiTotalValue > 0 ? (value / fiiTotalValue) * 100 : 0,
+      color: fundTypeColor(index),
     }))
 
   return (
@@ -476,20 +755,43 @@ export function Diversificacao() {
         <>
           {/* Bar chart card */}
           <div className="rounded-2xl border border-zinc-200/60 bg-white shadow-sm p-6">
-            <p className="text-base font-bold text-zinc-900 mb-1">
-              Distribuição por setor
-            </p>
-            <p className="text-xs text-zinc-600 mb-5">
-              Percentual calculado sobre o valor atual de mercado
-            </p>
-            <SectorBarChart groups={sectorGroups} />
+            {tab === 'fii' ? (
+              <>
+                <p className="text-base font-bold text-zinc-900 mb-1">
+                  Distribuição por segmento e tipo de fundo
+                </p>
+                <p className="text-xs text-zinc-600 mb-5">
+                  Percentual calculado sobre o valor atual de mercado
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-sm font-semibold text-zinc-700 mb-3">Distribuição por Segmento</p>
+                    <SectorBarChart groups={sectorGroups} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-zinc-700 mb-3">Distribuição por Tipo de Fundo</p>
+                    <SectorBarChart groups={fundTypeGroups} />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-base font-bold text-zinc-900 mb-1">
+                  Distribuição por setor
+                </p>
+                <p className="text-xs text-zinc-600 mb-5">
+                  Percentual calculado sobre o valor atual de mercado
+                </p>
+                <SectorBarChart groups={sectorGroups} />
+              </>
+            )}
           </div>
 
           {/* Table card */}
           <div className="rounded-2xl border border-zinc-200/60 bg-white shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-zinc-200/60 flex items-center justify-between">
               <p className="text-base font-bold text-zinc-900">
-                Ativos por setor
+                {tab === 'fii' ? 'FIIs por segmento' : 'Ativos por setor'}
               </p>
               {activeAssets.some(a => a.resolvedSector === 'Sem setor') && (
                 <span className="rounded-full bg-yellow-100 px-3 py-0.5 text-xs font-semibold text-yellow-700">
@@ -497,11 +799,17 @@ export function Diversificacao() {
                 </span>
               )}
             </div>
-            <AssetTabTable
-              assets={activeAssets}
-              sectorOptions={sectorOptions}
-              totalValue={totalValue}
-            />
+            {tab === 'fii' ? (
+              <FiiTabTable
+                assets={activeAssets}
+                totalValue={totalValue}
+              />
+            ) : (
+              <StockTabTable
+                assets={activeAssets}
+                totalValue={totalValue}
+              />
+            )}
           </div>
 
           {/* Concentration alerts */}
