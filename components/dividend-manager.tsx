@@ -168,7 +168,7 @@ export function DividendManager() {
   })
 
   const { data: assetOptions = [] } = useQuery({
-    queryKey: ['portfolio'],
+    queryKey: ['portfolio', 'asset-options'],
     queryFn: fetchAssets,
   })
 
