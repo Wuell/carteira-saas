@@ -47,8 +47,7 @@ type AssetFromApi = {
   sector?: string | null
   quantity: number
   avgPrice: number
-  currentPrice: number
-  investedValue: number
+  cachedPrice?: number | null
   assetSubType?: string | null
 }
 
@@ -64,6 +63,7 @@ type Portfolio = {
 
 type EnrichedAsset = AssetFromApi & {
   currentValue: number
+  investedValue: number
   resolvedSector: string
 }
 
@@ -410,12 +410,13 @@ export function Diversificacao() {
 
   // Enrich assets: merge currentValue + resolve sector
   const enriched: EnrichedAsset[] = (assetsData ?? []).map(asset => {
-    const currentValue = currentValueMap.get(asset.ticker) ?? asset.investedValue
+    const investedValue = asset.avgPrice * asset.quantity
+    const currentValue = currentValueMap.get(asset.ticker) ?? investedValue
     const resolvedSector =
       asset.sector?.trim() ||
       inferSector(asset.ticker) ||
       'Sem setor'
-    return { ...asset, currentValue, resolvedSector }
+    return { ...asset, currentValue, investedValue, resolvedSector }
   })
 
   const fiis = enriched.filter(a => a.type === 'fii')
