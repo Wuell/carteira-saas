@@ -516,14 +516,12 @@ export function AssetManager() {
                         className={`border-b last:border-0 cursor-pointer transition-colors ${selected ? 'bg-blue-50' : 'hover:bg-zinc-50'}`}
                       >
                         <td className="px-4 py-3">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-medium text-zinc-900">{asset.ticker}</span>
-                            <button
-                              onClick={e => { e.stopPropagation(); setAboutItem({ kind: 'asset', data: asset }) }}
-                              className="text-zinc-300 hover:text-zinc-500 transition-colors text-xs leading-none"
-                              title="Sobre este ativo"
-                            >ℹ</button>
-                          </div>
+                          <button
+                            onClick={e => { e.stopPropagation(); setAboutItem({ kind: 'asset', data: asset }) }}
+                            className="font-medium text-zinc-900 hover:underline underline-offset-2 transition-colors"
+                          >
+                            {asset.ticker}
+                          </button>
                         </td>
                         <td className="px-4 py-3 text-zinc-500">{TYPE_LABELS[asset.type] ?? asset.type}</td>
                         <td className="px-4 py-3 text-zinc-700">{asset.quantity}</td>
@@ -589,14 +587,12 @@ export function AssetManager() {
                         className={`border-b last:border-0 cursor-pointer transition-colors ${selected ? 'bg-blue-50' : 'hover:bg-zinc-50'}`}
                       >
                         <td className="px-4 py-3">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-medium text-zinc-900">{lot.name}</span>
-                            <button
-                              onClick={e => { e.stopPropagation(); setAboutItem({ kind: 'fixed', data: lot }) }}
-                              className="text-zinc-300 hover:text-zinc-500 transition-colors text-xs leading-none"
-                              title="Sobre este investimento"
-                            >ℹ</button>
-                          </div>
+                          <button
+                            onClick={e => { e.stopPropagation(); setAboutItem({ kind: 'fixed', data: lot }) }}
+                            className="font-medium text-zinc-900 hover:underline underline-offset-2 transition-colors text-left"
+                          >
+                            {lot.name}
+                          </button>
                         </td>
                         <td className="px-4 py-3 text-zinc-500">{isTesouro ? 'Tesouro Direto' : 'CDB / LCI / LCA'}</td>
                         <td className="px-4 py-3 text-zinc-700">{formatBRL(lot.investedValue)}</td>
