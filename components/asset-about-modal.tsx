@@ -290,8 +290,8 @@ export function AssetAboutModal({ item, onClose }: { item: ModalItem; onClose: (
 function InfoRow({ label, value, placeholder = 'Não informado' }: { label: string; value: string; placeholder?: string }) {
   return (
     <div>
-      <p className="text-xs font-medium text-zinc-500">{label}</p>
-      <p className={`text-sm mt-0.5 ${value ? 'text-zinc-900' : 'text-zinc-400 italic'}`}>
+      <p className="text-xs font-semibold text-zinc-700 uppercase tracking-wide">{label}</p>
+      <p className={`text-sm mt-0.5 ${value ? 'text-zinc-900' : 'text-zinc-500 italic'}`}>
         {value || placeholder}
       </p>
     </div>
