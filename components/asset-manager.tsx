@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, useEffect, useRef } from 'react'
+import { AssetAboutModal } from './asset-about-modal'
 
 // ---------- Types ----------
 
@@ -15,6 +16,9 @@ type AssetRow = {
   currentValue: number
   investedValue: number
   returnPct: number
+  assetSubType?: string | null
+  sector?: string | null
+  notes?: string | null
 }
 
 type FixedLotRow = {
@@ -24,6 +28,7 @@ type FixedLotRow = {
   investedValue: number
   currentValue: number
   returnPct: number
+  notes?: string | null
 }
 
 type Portfolio = { assets: AssetRow[]; fixedLots: FixedLotRow[] }
@@ -188,6 +193,7 @@ export function AssetManager() {
   const [editFixed, setEditFixed] = useState<FixedLotRow | null>(null)
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null)
   const [selectedFixedId, setSelectedFixedId] = useState<string | null>(null)
+  const [aboutItem, setAboutItem] = useState<{ kind: 'asset'; data: AssetRow } | { kind: 'fixed'; data: FixedLotRow } | null>(null)
 
   function selectCategory(cat: Category) {
     setSelectedCategory(cat)
@@ -352,6 +358,9 @@ export function AssetManager() {
         <EditFixedModal lot={editFixed} onClose={() => setEditFixed(null)} saving={editFixedMutation.isPending}
           onSave={fields => editFixedMutation.mutate({ id: editFixed.id, ...fields })} />
       )}
+      {aboutItem && (
+        <AssetAboutModal item={aboutItem} onClose={() => setAboutItem(null)} />
+      )}
 
       <div className="flex flex-col gap-6">
         {/* Formulário */}
@@ -506,7 +515,16 @@ export function AssetManager() {
                         onClick={() => setSelectedAssetId(id => id === asset.id ? null : asset.id)}
                         className={`border-b last:border-0 cursor-pointer transition-colors ${selected ? 'bg-blue-50' : 'hover:bg-zinc-50'}`}
                       >
-                        <td className="px-4 py-3 font-medium text-zinc-900">{asset.ticker}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-medium text-zinc-900">{asset.ticker}</span>
+                            <button
+                              onClick={e => { e.stopPropagation(); setAboutItem({ kind: 'asset', data: asset }) }}
+                              className="text-zinc-300 hover:text-zinc-500 transition-colors text-xs leading-none"
+                              title="Sobre este ativo"
+                            >ℹ</button>
+                          </div>
+                        </td>
                         <td className="px-4 py-3 text-zinc-500">{TYPE_LABELS[asset.type] ?? asset.type}</td>
                         <td className="px-4 py-3 text-zinc-700">{asset.quantity}</td>
                         <td className="px-4 py-3 text-zinc-700">{formatBRL(asset.avgPrice)}</td>
@@ -570,7 +588,16 @@ export function AssetManager() {
                         onClick={() => setSelectedFixedId(id => id === lot.id ? null : lot.id)}
                         className={`border-b last:border-0 cursor-pointer transition-colors ${selected ? 'bg-blue-50' : 'hover:bg-zinc-50'}`}
                       >
-                        <td className="px-4 py-3 font-medium text-zinc-900">{lot.name}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-medium text-zinc-900">{lot.name}</span>
+                            <button
+                              onClick={e => { e.stopPropagation(); setAboutItem({ kind: 'fixed', data: lot }) }}
+                              className="text-zinc-300 hover:text-zinc-500 transition-colors text-xs leading-none"
+                              title="Sobre este investimento"
+                            >ℹ</button>
+                          </div>
+                        </td>
                         <td className="px-4 py-3 text-zinc-500">{isTesouro ? 'Tesouro Direto' : 'CDB / LCI / LCA'}</td>
                         <td className="px-4 py-3 text-zinc-700">{formatBRL(lot.investedValue)}</td>
                         <td className="px-4 py-3 text-zinc-700">{formatBRL(lot.currentValue)}</td>

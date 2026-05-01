@@ -26,6 +26,7 @@ type FixedLotRow = {
   investedValue: number
   currentValue: number
   returnPct: number
+  notes?: string | null
 }
 
 type Portfolio = {
@@ -66,7 +67,7 @@ export function AssetTable() {
   return (
     <>
       {selectedAsset && (
-        <AssetAboutModal asset={selectedAsset} onClose={() => setSelectedAsset(null)} />
+        <AssetAboutModal item={{ kind: 'asset', data: selectedAsset }} onClose={() => setSelectedAsset(null)} />
       )}
 
       <div className="flex flex-col gap-4">
@@ -102,7 +103,7 @@ export function AssetTable() {
                       <td className="px-4 py-3">
                         <button
                           onClick={() => setSelectedAsset(asset)}
-                          className="font-medium text-indigo-600 hover:text-indigo-800 hover:underline underline-offset-2 transition-colors"
+                          className="font-medium text-zinc-900 hover:underline underline-offset-2 transition-colors"
                         >
                           {asset.ticker}
                         </button>

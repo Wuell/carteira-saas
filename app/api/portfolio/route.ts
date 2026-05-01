@@ -88,6 +88,7 @@ export async function GET() {
       investedValue: lot.investedValue,
       currentValue,
       returnPct,
+      notes: lot.notes ?? null,
     }
   })
 

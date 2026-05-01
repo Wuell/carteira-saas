@@ -43,7 +43,7 @@ export async function PATCH(req: NextRequest) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
-  const { id, name, investedValue, currentValue } = await req.json()
+  const { id, name, investedValue, currentValue, notes } = await req.json()
 
   const user = await getOrCreateUser(userId)
   const lot = await prisma.fixedIncomeLot.findUnique({ where: { id } })
@@ -60,6 +60,7 @@ export async function PATCH(req: NextRequest) {
       ...(currentValue !== undefined && {
         currentValue: currentValue !== '' ? Number(currentValue) : null,
       }),
+      ...(notes !== undefined && { notes }),
     },
   })
 

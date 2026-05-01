@@ -63,6 +63,7 @@ model FixedIncomeLot {
   subType       String   // "tesouro" | "cdb"
   investedValue Float
   currentValue  Float?   // atualizado manualmente pelo usuário via app do banco
+  notes         String?  // descrição/observações
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
