@@ -206,12 +206,12 @@ export function AssetAboutModal({ item, onClose }: { item: ModalItem; onClose: (
             <div className="space-y-3">
               {isAsset && fieldConfig.field1 && (
                 <div>
-                  <label className="text-xs font-medium text-zinc-600 block mb-1">{fieldConfig.field1.label}</label>
+                  <label className="text-xs font-semibold text-zinc-800 block mb-1">{fieldConfig.field1.label}</label>
                   <input
                     value={field1Val}
                     onChange={e => setField1Val(e.target.value)}
                     placeholder={fieldConfig.field1.placeholder}
-                    className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                   {fieldConfig.field1.suggestions.length > 0 && (
                     <div className="mt-1 flex flex-wrap gap-1">
@@ -228,12 +228,12 @@ export function AssetAboutModal({ item, onClose }: { item: ModalItem; onClose: (
 
               {isAsset && fieldConfig.field2 && (
                 <div>
-                  <label className="text-xs font-medium text-zinc-600 block mb-1">{fieldConfig.field2.label}</label>
+                  <label className="text-xs font-semibold text-zinc-800 block mb-1">{fieldConfig.field2.label}</label>
                   <input
                     value={field2Val}
                     onChange={e => setField2Val(e.target.value)}
                     placeholder={fieldConfig.field2.placeholder}
-                    className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                   {fieldConfig.field2.suggestions.length > 0 && (
                     <div className="mt-1 flex flex-wrap gap-1">
@@ -249,13 +249,13 @@ export function AssetAboutModal({ item, onClose }: { item: ModalItem; onClose: (
               )}
 
               <div>
-                <label className="text-xs font-medium text-zinc-600 block mb-1">Descrição</label>
+                <label className="text-xs font-semibold text-zinc-800 block mb-1">Descrição</label>
                 <textarea
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
                   rows={3}
                   placeholder={notesPlaceholder}
-                  className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                  className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
                 />
               </div>
 
