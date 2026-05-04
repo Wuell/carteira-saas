@@ -427,16 +427,6 @@ function StockTabTable({
     return sumB - sumA
   })
 
-  // Build segment concentration map
-  const segmentValueMap = new Map<string, number>()
-  for (const a of assets) {
-    if (a.stockSegment !== 'Não definido') {
-      segmentValueMap.set(a.stockSegment, (segmentValueMap.get(a.stockSegment) ?? 0) + a.currentValue)
-    }
-  }
-  // Track which segment has already shown its alert (first row in that segment group)
-  const segmentAlertShown = new Set<string>()
-
   if (sectors.length === 0) {
     return (
       <div className="flex items-center justify-center py-10 text-sm text-zinc-600">
@@ -468,16 +458,6 @@ function StockTabTable({
               const sectorKey = `${asset.id}:sector`
               const segmentKey = `${asset.id}:segment`
               const isSegmentUndefined = asset.stockSegment === 'Não definido'
-
-              // Segment alert: show only on first occurrence of that segment across entire table
-              const segmentPct = totalValue > 0
-                ? ((segmentValueMap.get(asset.stockSegment) ?? 0) / totalValue) * 100
-                : 0
-              const isFirstSegmentOccurrence =
-                !isSegmentUndefined && !segmentAlertShown.has(asset.stockSegment)
-              if (isFirstSegmentOccurrence) segmentAlertShown.add(asset.stockSegment)
-              const segmentIsHigh = isFirstSegmentOccurrence && segmentPct > 40
-              const segmentIsModerate = isFirstSegmentOccurrence && segmentPct > 30 && !segmentIsHigh
 
               return (
                 <tr
@@ -562,23 +542,9 @@ function StockTabTable({
                         />
                       ) : (
                         <>
-                          <span
-                            className={`text-sm ${
-                              isSegmentUndefined ? 'text-yellow-700' : 'text-zinc-700'
-                            }`}
-                          >
+                          <span className={`text-sm ${isSegmentUndefined ? 'text-yellow-700' : 'text-zinc-700'}`}>
                             {asset.stockSegment}
                           </span>
-                          {segmentIsHigh && (
-                            <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-600">
-                              {segmentPct.toFixed(0)}% em {asset.stockSegment} — Alta concentração
-                            </span>
-                          )}
-                          {segmentIsModerate && (
-                            <span className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-semibold text-orange-700">
-                              {segmentPct.toFixed(0)}% em {asset.stockSegment} — Atenção
-                            </span>
-                          )}
                           <button
                             onClick={() => setEditing(segmentKey)}
                             className="rounded p-0.5 text-zinc-400 hover:text-green-600 hover:bg-green-50 transition-colors"
@@ -600,6 +566,44 @@ function StockTabTable({
           })}
         </tbody>
       </table>
+    </div>
+  )
+}
+
+// ——— Concentration alert card ———
+
+function ConcentrationAlertCard({
+  title,
+  groups,
+  portfolioLabel,
+}: {
+  title: string
+  groups: SectorGroup[]
+  portfolioLabel: string
+}) {
+  const flagged = groups.filter(g => g.pct > 30)
+  if (flagged.length === 0) return null
+
+  return (
+    <div className="rounded-2xl border border-orange-200 bg-orange-50 px-6 py-4">
+      <p className="text-sm font-bold text-orange-800 mb-2">{title}</p>
+      <ul className="flex flex-col gap-1">
+        {flagged.map(g => (
+          <li key={g.sector} className="flex items-center gap-2 text-sm text-orange-700">
+            <span
+              className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                g.pct > 40 ? 'bg-red-100 text-red-600' : 'bg-orange-100 text-orange-700'
+              }`}
+            >
+              {g.pct.toFixed(1)}%
+            </span>
+            <span>
+              <strong>{g.sector}</strong> representa {g.pct.toFixed(1)}% da carteira de {portfolioLabel}
+              {g.pct > 40 ? ' — concentração alta' : ' — acima de 30%'}
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
@@ -757,25 +761,6 @@ export function Diversificacao() {
                   <div>
                     <p className="text-sm font-semibold text-zinc-700 mb-3">Distribuição por Tipo de Fundo</p>
                     <SectorBarChart groups={fundTypeGroups} />
-                    {fundTypeGroups.some(g => g.pct > 30) && (
-                      <div className="flex flex-wrap gap-2 mt-3">
-                        {fundTypeGroups
-                          .filter(g => g.pct > 30)
-                          .map(g => (
-                            <span
-                              key={g.sector}
-                              className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                                g.pct > 40
-                                  ? 'bg-red-100 text-red-600'
-                                  : 'bg-orange-100 text-orange-700'
-                              }`}
-                            >
-                              {g.pct.toFixed(0)}% em {g.sector} —{' '}
-                              {g.pct > 40 ? 'Alta concentração' : 'Atenção'}
-                            </span>
-                          ))}
-                      </div>
-                    )}
                   </div>
                 </div>
               </>
@@ -826,33 +811,33 @@ export function Diversificacao() {
             )}
           </div>
 
-          {/* Concentration alerts */}
-          {sectorGroups.some(g => g.pct > 30) && (
-            <div className="rounded-2xl border border-orange-200 bg-orange-50 px-6 py-4">
-              <p className="text-sm font-bold text-orange-800 mb-2">Alertas de concentração</p>
-              <ul className="flex flex-col gap-1">
-                {sectorGroups
-                  .filter(g => g.pct > 30)
-                  .map(g => (
-                    <li key={g.sector} className="flex items-center gap-2 text-sm text-orange-700">
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                          g.pct > 40
-                            ? 'bg-red-100 text-red-600'
-                            : 'bg-orange-100 text-orange-700'
-                        }`}
-                      >
-                        {g.pct.toFixed(1)}%
-                      </span>
-                      <span>
-                        <strong>{g.sector}</strong> representa {g.pct.toFixed(1)}% da carteira de{' '}
-                        {tab === 'fii' ? 'FIIs' : 'Ações BR'}
-                        {g.pct > 40 ? ' — concentração alta' : ' — acima de 30%'}
-                      </span>
-                    </li>
-                  ))}
-              </ul>
-            </div>
+          {/* Concentration alerts — split by category */}
+          {tab === 'fii' ? (
+            <>
+              <ConcentrationAlertCard
+                title="Alertas de concentração por segmento"
+                groups={sectorGroups}
+                portfolioLabel="FIIs"
+              />
+              <ConcentrationAlertCard
+                title="Alertas de concentração por tipo de fundo"
+                groups={fundTypeGroups}
+                portfolioLabel="FIIs"
+              />
+            </>
+          ) : (
+            <>
+              <ConcentrationAlertCard
+                title="Alertas de concentração por setor"
+                groups={sectorGroups}
+                portfolioLabel="Ações BR"
+              />
+              <ConcentrationAlertCard
+                title="Alertas de concentração por segmento"
+                groups={stockSegmentGroups}
+                portfolioLabel="Ações BR"
+              />
+            </>
           )}
         </>
       )}
