@@ -303,9 +303,8 @@ function FiiTabTable({
           {sectors.map(([sector, items]) => {
             const isMissing = sector === 'Sem setor'
 
-            return items.map((asset, rowIdx) => {
+            return items.map(asset => {
               const assetPct = totalValue > 0 ? (asset.currentValue / totalValue) * 100 : 0
-              const isFirstInGroup = rowIdx === 0
               const sectorKey = `${asset.id}:sector`
               const fundTypeKey = `${asset.id}:fundType`
               const isFundTypeUndefined = asset.fundType === 'Não definido'
@@ -338,7 +337,7 @@ function FiiTabTable({
                         />
                       ) : (
                         <>
-                          <span className={`text-sm ${isMissing ? 'text-yellow-700' : isFirstInGroup ? 'font-medium text-zinc-700' : 'text-zinc-500'}`}>
+                          <span className={`text-sm font-medium ${isMissing ? 'text-yellow-700' : 'text-zinc-700'}`}>
                             {sector}
                           </span>
                           <button
@@ -452,9 +451,8 @@ function StockTabTable({
           {sectors.map(([sector, items]) => {
             const isMissing = sector === 'Sem setor'
 
-            return items.map((asset, rowIdx) => {
+            return items.map(asset => {
               const assetPct = totalValue > 0 ? (asset.currentValue / totalValue) * 100 : 0
-              const isFirstInGroup = rowIdx === 0
               const sectorKey = `${asset.id}:sector`
               const segmentKey = `${asset.id}:segment`
               const isSegmentUndefined = asset.stockSegment === 'Não definido'
@@ -475,57 +473,31 @@ function StockTabTable({
 
                   {/* Setor */}
                   <td className="px-4 py-3">
-                    {isFirstInGroup ? (
-                      <span className="flex items-center gap-2 flex-wrap">
-                        {editing === sectorKey ? (
-                          <SectorEditor
-                            assetId={asset.id}
-                            currentValue={asset.resolvedSector}
-                            options={STOCK_SECTORS}
-                            field="sector"
-                            placeholder="Sem setor"
-                            onDone={() => setEditing(null)}
-                          />
-                        ) : (
-                          <>
-                            <span className={`font-medium ${isMissing ? 'text-yellow-700' : 'text-zinc-700'}`}>
-                              {sector}
-                            </span>
-                            <button
-                              onClick={() => setEditing(sectorKey)}
-                              className="rounded p-0.5 text-zinc-400 hover:text-green-600 hover:bg-green-50 transition-colors"
-                              title="Editar setor"
-                            >
-                              <IconPencil />
-                            </button>
-                          </>
-                        )}
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-1">
-                        {editing === sectorKey ? (
-                          <SectorEditor
-                            assetId={asset.id}
-                            currentValue={asset.resolvedSector}
-                            options={STOCK_SECTORS}
-                            field="sector"
-                            placeholder="Sem setor"
-                            onDone={() => setEditing(null)}
-                          />
-                        ) : (
-                          <>
-                            <span className="text-zinc-500 text-xs">—</span>
-                            <button
-                              onClick={() => setEditing(sectorKey)}
-                              className="rounded p-0.5 text-zinc-400 hover:text-green-600 hover:bg-green-50 transition-colors"
-                              title="Editar setor"
-                            >
-                              <IconPencil />
-                            </button>
-                          </>
-                        )}
-                      </span>
-                    )}
+                    <span className="flex items-center gap-2">
+                      {editing === sectorKey ? (
+                        <SectorEditor
+                          assetId={asset.id}
+                          currentValue={asset.resolvedSector}
+                          options={STOCK_SECTORS}
+                          field="sector"
+                          placeholder="Sem setor"
+                          onDone={() => setEditing(null)}
+                        />
+                      ) : (
+                        <>
+                          <span className={`text-sm font-medium ${isMissing ? 'text-yellow-700' : 'text-zinc-700'}`}>
+                            {sector}
+                          </span>
+                          <button
+                            onClick={() => setEditing(sectorKey)}
+                            className="rounded p-0.5 text-zinc-400 hover:text-green-600 hover:bg-green-50 transition-colors"
+                            title="Editar setor"
+                          >
+                            <IconPencil />
+                          </button>
+                        </>
+                      )}
+                    </span>
                   </td>
 
                   {/* Segmento */}
