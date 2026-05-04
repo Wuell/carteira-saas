@@ -9,8 +9,6 @@ import {
   YAxis,
   Cell,
   ResponsiveContainer,
-  PieChart,
-  Pie,
 } from 'recharts'
 import {
   inferSector,
@@ -223,6 +221,7 @@ function SectorBarChart({ groups }: { groups: SectorGroup[] }) {
           layout="vertical"
           margin={{ top: 0, right: 48, bottom: 0, left: 0 }}
           barCategoryGap="25%"
+          style={{ outline: 'none' }}
         >
           <XAxis
             type="number"
@@ -247,69 +246,6 @@ function SectorBarChart({ groups }: { groups: SectorGroup[] }) {
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-    </div>
-  )
-}
-
-// ——— Segment pie chart ———
-
-type PieItem = {
-  name: string
-  value: number
-  pct: number
-  color: string
-}
-
-function SegmentPieChart({ items }: { items: PieItem[] }) {
-  const [activeIndex, setActiveIndex] = useState<number | null>(null)
-
-  if (items.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-32 text-sm text-zinc-600">
-        Nenhum segmento definido.
-      </div>
-    )
-  }
-
-  return (
-    <div>
-      <div style={{ width: '100%', height: 200 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={items}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              outerRadius={90}
-              isAnimationActive={false}
-              onMouseEnter={(_, index) => setActiveIndex(index)}
-              onMouseLeave={() => setActiveIndex(null)}
-            >
-              {items.map((entry, index) => (
-                <Cell
-                  key={index}
-                  fill={entry.color}
-                  opacity={activeIndex === null || activeIndex === index ? 1 : 0.4}
-                />
-              ))}
-            </Pie>
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
-      <div className="flex flex-col gap-1 mt-4">
-        {items.map(item => (
-          <div key={item.name} className="flex items-center gap-2 text-xs">
-            <span
-              className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-              style={{ backgroundColor: item.color }}
-            />
-            <span className="text-zinc-700">{item.name}</span>
-            <span className="ml-auto font-medium text-zinc-900">{item.pct.toFixed(1)}%</span>
-          </div>
-        ))}
-      </div>
     </div>
   )
 }
@@ -365,11 +301,7 @@ function FiiTabTable({
         </thead>
         <tbody>
           {sectors.map(([sector, items]) => {
-            const sectorValue = items.reduce((s, a) => s + a.currentValue, 0)
-            const sectorPct = totalValue > 0 ? (sectorValue / totalValue) * 100 : 0
             const isMissing = sector === 'Sem setor'
-            const isHighConcentration = sectorPct > 40
-            const isModerateConcentration = sectorPct > 30 && !isHighConcentration
 
             return items.map((asset, rowIdx) => {
               const assetPct = totalValue > 0 ? (asset.currentValue / totalValue) * 100 : 0
@@ -394,71 +326,31 @@ function FiiTabTable({
 
                   {/* Segmento */}
                   <td className="px-4 py-3">
-                    {isFirstInGroup ? (
-                      <span className="flex items-center gap-2 flex-wrap">
-                        {editing === sectorKey ? (
-                          <SectorEditor
-                            assetId={asset.id}
-                            currentValue={asset.resolvedSector}
-                            options={FII_SECTORS}
-                            field="sector"
-                            placeholder="Sem segmento"
-                            onDone={() => setEditing(null)}
-                          />
-                        ) : (
-                          <>
-                            <span
-                              className={`font-medium ${
-                                isMissing ? 'text-yellow-700' : 'text-zinc-700'
-                              }`}
-                            >
-                              {sector}
-                            </span>
-                            {isHighConcentration && (
-                              <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-600">
-                                {sectorPct.toFixed(0)}% — Alta
-                              </span>
-                            )}
-                            {isModerateConcentration && (
-                              <span className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-semibold text-orange-700">
-                                {sectorPct.toFixed(0)}% — Atenção
-                              </span>
-                            )}
-                            <button
-                              onClick={() => setEditing(sectorKey)}
-                              className="rounded p-0.5 text-zinc-400 hover:text-green-600 hover:bg-green-50 transition-colors"
-                              title="Editar segmento"
-                            >
-                              <IconPencil />
-                            </button>
-                          </>
-                        )}
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-1">
-                        {editing === sectorKey ? (
-                          <SectorEditor
-                            assetId={asset.id}
-                            currentValue={asset.resolvedSector}
-                            options={FII_SECTORS}
-                            field="sector"
-                            placeholder="Sem segmento"
-                            onDone={() => setEditing(null)}
-                          />
-                        ) : (
-                          <>
-                            <span className="text-zinc-500 text-xs">—</span>
-                            <button
-                              onClick={() => setEditing(sectorKey)}
-                              className="rounded p-0.5 text-zinc-400 hover:text-green-600 hover:bg-green-50 transition-colors"
-                              title="Editar segmento"
-                            >
-                              <IconPencil />
-                            </button>
-                          </>
-                        )}
-                      </span>
-                    )}
+                    <span className="flex items-center gap-2">
+                      {editing === sectorKey ? (
+                        <SectorEditor
+                          assetId={asset.id}
+                          currentValue={asset.resolvedSector}
+                          options={FII_SECTORS}
+                          field="sector"
+                          placeholder="Sem segmento"
+                          onDone={() => setEditing(null)}
+                        />
+                      ) : (
+                        <>
+                          <span className={`text-sm ${isMissing ? 'text-yellow-700' : isFirstInGroup ? 'font-medium text-zinc-700' : 'text-zinc-500'}`}>
+                            {sector}
+                          </span>
+                          <button
+                            onClick={() => setEditing(sectorKey)}
+                            className="rounded p-0.5 text-zinc-400 hover:text-green-600 hover:bg-green-50 transition-colors"
+                            title="Editar segmento"
+                          >
+                            <IconPencil />
+                          </button>
+                        </>
+                      )}
+                    </span>
                   </td>
 
                   {/* Tipo de Fundo */}
@@ -568,11 +460,7 @@ function StockTabTable({
         </thead>
         <tbody>
           {sectors.map(([sector, items]) => {
-            const sectorValue = items.reduce((s, a) => s + a.currentValue, 0)
-            const sectorPct = totalValue > 0 ? (sectorValue / totalValue) * 100 : 0
             const isMissing = sector === 'Sem setor'
-            const isHighConcentration = sectorPct > 40
-            const isModerateConcentration = sectorPct > 30 && !isHighConcentration
 
             return items.map((asset, rowIdx) => {
               const assetPct = totalValue > 0 ? (asset.currentValue / totalValue) * 100 : 0
@@ -620,23 +508,9 @@ function StockTabTable({
                           />
                         ) : (
                           <>
-                            <span
-                              className={`font-medium ${
-                                isMissing ? 'text-yellow-700' : 'text-zinc-700'
-                              }`}
-                            >
+                            <span className={`font-medium ${isMissing ? 'text-yellow-700' : 'text-zinc-700'}`}>
                               {sector}
                             </span>
-                            {isHighConcentration && (
-                              <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-600">
-                                {sectorPct.toFixed(0)}% — Alta concentração
-                              </span>
-                            )}
-                            {isModerateConcentration && (
-                              <span className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-semibold text-orange-700">
-                                {sectorPct.toFixed(0)}% — Atenção
-                              </span>
-                            )}
                             <button
                               onClick={() => setEditing(sectorKey)}
                               className="rounded p-0.5 text-zinc-400 hover:text-green-600 hover:bg-green-50 transition-colors"
@@ -825,10 +699,10 @@ export function Diversificacao() {
     }
   }
   const stocksTotalValue = stocks.reduce((s, a) => s + a.currentValue, 0)
-  const stockSegmentPieItems: PieItem[] = [...stockSegmentMap.entries()]
+  const stockSegmentGroups: SectorGroup[] = [...stockSegmentMap.entries()]
     .sort((a, b) => b[1] - a[1])
     .map(([name, value], index) => ({
-      name,
+      sector: name,
       value,
       pct: stocksTotalValue > 0 ? (value / stocksTotalValue) * 100 : 0,
       color: sectorColor(index),
@@ -920,7 +794,7 @@ export function Diversificacao() {
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-zinc-700 mb-3">Distribuição por Segmento</p>
-                    <SegmentPieChart items={stockSegmentPieItems} />
+                    <SectorBarChart groups={stockSegmentGroups} />
                   </div>
                 </div>
               </>
